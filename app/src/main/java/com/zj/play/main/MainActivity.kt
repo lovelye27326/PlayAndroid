@@ -20,7 +20,7 @@ class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel by viewModels<MainViewModel>()
-    var isPort = true
+    var isPort = true //是否竖直
 
     override fun initView() {
         isPort = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
