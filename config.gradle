@@ -19,7 +19,7 @@ ext {
     ]
 
     sign = [
-            file         : '/Users/zhujiang/AndroidSoft/wanAndroid/wanAndroid.jks',
+            file         : 'D:/suncars.jks',
             storePassword: '123456',
             keyAlias     : 'wanAndroid',
             keyPassword  : '123456'
