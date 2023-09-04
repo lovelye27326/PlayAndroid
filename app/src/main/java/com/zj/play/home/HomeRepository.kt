@@ -60,7 +60,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                 if (bannerResponse.errorCode == 0) {
                     val bannerList = bannerResponse.data
                     dataStore.saveLongData(DOWN_IMAGE_TIME, System.currentTimeMillis())
-                    if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) {
+                    if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) { //数据库本地list数据头条非空且和api返回的头条一致
                         Result.success(bannerBeanList)
                     } else {
                         bannerBeanDao.deleteAll()
@@ -134,6 +134,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                 val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
                 val articleListHome = articleListDao.getArticleList(HOME)
                 val articleListTop = articleListDao.getTopArticleList(HOME_TOP)
+                //先获取热门文章
                 var downTopArticleTime = 0L
                 dataStore.readLongFlow(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis()).first {
                     downTopArticleTime = it
@@ -164,6 +165,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                         }
                     }
                 }
+                //先获取一般文章，叠加一起
                 if (articleListHome.isNotEmpty() && downArticleTime > 0 && downArticleTime - System.currentTimeMillis() < FOUR_HOUR
                     && !query.isRefresh
                 ) {
@@ -194,7 +196,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                         )
                     }
                 }
-            } else {
+            } else { //加载第二页开始， 只获取一般文章
                 val articleListDeferred =
                     async { PlayAndroidNetwork.getArticleList(query.page - 1) }
                 val articleList = articleListDeferred.await()

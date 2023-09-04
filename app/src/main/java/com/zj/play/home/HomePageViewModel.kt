@@ -31,13 +31,13 @@ class HomePageViewModel @Inject constructor(
     val articleList = ArrayList<Article>()
 
     val articleLiveData = Transformations.switchMap(pageLiveData) { query ->
-        homeRepository.getArticleList(query)
+        homeRepository.getArticleList(query) //根据(page, isRefresh)的筛选条件api获取
     }
 
     fun getBanner() = homeRepository.getBanner()
 
     fun getArticleList(page: Int, isRefresh: Boolean) {
-        pageLiveData.value = QueryHomeArticle(page, isRefresh)
+        pageLiveData.value = QueryHomeArticle(page, isRefresh) //筛选条件封装
     }
 
 }

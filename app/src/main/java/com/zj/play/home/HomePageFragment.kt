@@ -56,7 +56,8 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
     private lateinit var bannerAdapter: ImageAdapter
-//    private lateinit var bannerAdapter2: ImageAdapter
+
+    //    private lateinit var bannerAdapter2: ImageAdapter
     private lateinit var articleAdapter: ArticleAdapter
     private var page = 1
 
@@ -97,7 +98,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         startLoading()
         initBanner()
         setDataStatus(viewModel.articleLiveData, {
-            if (viewModel.articleList.size > 0) loadFinished()
+            if (viewModel.articleList.size > 0) loadFinished() //判断弱网情况加载结束
         }) {
             if (page == 1 && viewModel.articleList.size > 0) {
                 viewModel.articleList.clear()
