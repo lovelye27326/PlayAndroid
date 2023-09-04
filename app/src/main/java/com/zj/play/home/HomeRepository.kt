@@ -42,18 +42,18 @@ class HomeRepository @Inject constructor(val application: Application) {
      * 获取banner
      */
     fun getBanner() = liveDataFire {
-        val dataStore = DataStoreUtils
-        var downImageTime = 0L
-        dataStore.readLongFlow(DOWN_IMAGE_TIME, System.currentTimeMillis()).first {
-            downImageTime = it
-            true
-        }
-        val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
-        val bannerBeanList = bannerBeanDao.getBannerBeanList()
-        if (bannerBeanList.isNotEmpty() && downImageTime > 0 && downImageTime - System.currentTimeMillis() < ONE_DAY) {
-            Result.success(bannerBeanList)
-        } else {
-            coroutineScope {
+        coroutineScope {
+            val dataStore = DataStoreUtils
+            var downImageTime = 0L
+            dataStore.readLongFlow(DOWN_IMAGE_TIME, System.currentTimeMillis()).first {
+                downImageTime = it
+                true
+            }
+            val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
+            val bannerBeanList = bannerBeanDao.getBannerBeanList()
+            if (bannerBeanList.isNotEmpty() && downImageTime > 0 && downImageTime - System.currentTimeMillis() < ONE_DAY) {
+                Result.success(bannerBeanList)
+            } else {
                 val bannerResponseDeferred =
                     async { PlayAndroidNetwork.getBanner() } //异步
                 val bannerResponse = bannerResponseDeferred.await()

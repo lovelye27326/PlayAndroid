@@ -2,6 +2,7 @@ package com.zj.play.home
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -110,8 +111,10 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun initBanner() {
         setDataStatus(viewModel.getBanner(), {
-            if (viewModel.bannerList.size > 0) loadFinished()
+            if (viewModel.bannerList.size > 0) loadFinished() //判断弱网情况加载结束
         }) {
+            val size = it.size
+            Log.e("HomePageFrg", "List size: $size")
             val main = activity as MainActivity
             if (viewModel.bannerList.size > 0)
                 viewModel.bannerList.clear()
