@@ -7,9 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.youth.banner.indicator.CircleIndicator
-import com.youth.banner.transformer.DepthPageTransformer
 import com.youth.banner.transformer.ZoomOutPageTransformer
-import com.zj.core.almanac.isZhLanguage
+import com.zj.core.util.isZhLanguage
 import com.zj.play.R
 import com.zj.play.article.ArticleAdapter
 import com.zj.play.databinding.FragmentHomePageBinding
@@ -37,9 +36,9 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
             homeBanner.addBannerLifecycleObserver(viewLifecycleOwner)
-            homeBanner2.addBannerLifecycleObserver(viewLifecycleOwner)
+//            homeBanner2.addBannerLifecycleObserver(viewLifecycleOwner)
             homeBanner.setPageTransformer(ZoomOutPageTransformer())
-            homeBanner2.setPageTransformer(DepthPageTransformer())
+//            homeBanner2.setPageTransformer(DepthPageTransformer())
         }
     }
 
@@ -47,7 +46,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         super.onResume()
         binding?.apply {
             homeBanner.start()
-            homeBanner2.start()
+//            homeBanner2.start()
         }
     }
 
@@ -56,7 +55,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
     private lateinit var bannerAdapter: ImageAdapter
-    private lateinit var bannerAdapter2: ImageAdapter
+//    private lateinit var bannerAdapter2: ImageAdapter
     private lateinit var articleAdapter: ArticleAdapter
     private var page = 1
 
@@ -73,13 +72,13 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                 activity?.overridePendingTransition(R.anim.search_push_in, R.anim.fake_anim)
             }
             bannerAdapter = ImageAdapter(requireContext(), viewModel.bannerList)
-            bannerAdapter2 = ImageAdapter(requireContext(), viewModel.bannerList2)
+//            bannerAdapter2 = ImageAdapter(requireContext(), viewModel.bannerList2)
             homeBanner.adapter = bannerAdapter
             homeBanner.setBannerRound(20f)
             homeBanner.setIndicator(CircleIndicator(context)).start()
-            homeBanner2.adapter = bannerAdapter2
-            homeBanner2.setIndicator(CircleIndicator(context)).start()
-            homeBanner2.setBannerRound(20f)
+//            homeBanner2.adapter = bannerAdapter2
+//            homeBanner2.setIndicator(CircleIndicator(context)).start()
+//            homeBanner2.setBannerRound(20f)
             homeToTopRecyclerView.setRecyclerViewLayoutManager(true)
             articleAdapter = ArticleAdapter(requireContext(), viewModel.articleList)
             homeToTopRecyclerView.onRefreshListener({
@@ -130,7 +129,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                 }
             }
             bannerAdapter.notifyDataSetChanged()
-            bannerAdapter2.notifyDataSetChanged()
+//            bannerAdapter2.notifyDataSetChanged()
         }
 
     }
@@ -143,9 +142,8 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         super.onPause()
         binding?.apply {
             homeBanner.stop()
-            homeBanner2.stop()
+//            homeBanner2.stop()
         }
-
     }
 
     companion object {

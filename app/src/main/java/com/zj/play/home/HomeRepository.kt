@@ -53,19 +53,23 @@ class HomeRepository @Inject constructor(val application: Application) {
         if (bannerBeanList.isNotEmpty() && downImageTime > 0 && downImageTime - System.currentTimeMillis() < ONE_DAY) {
             Result.success(bannerBeanList)
         } else {
-            val bannerResponse = PlayAndroidNetwork.getBanner()
-            if (bannerResponse.errorCode == 0) {
-                val bannerList = bannerResponse.data
-                dataStore.saveLongData(DOWN_IMAGE_TIME, System.currentTimeMillis())
-                if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) {
-                    Result.success(bannerBeanList)
+            coroutineScope {
+                val bannerResponseDeferred =
+                    async { PlayAndroidNetwork.getBanner() } //异步
+                val bannerResponse = bannerResponseDeferred.await()
+                if (bannerResponse.errorCode == 0) {
+                    val bannerList = bannerResponse.data
+                    dataStore.saveLongData(DOWN_IMAGE_TIME, System.currentTimeMillis())
+                    if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) {
+                        Result.success(bannerBeanList)
+                    } else {
+                        bannerBeanDao.deleteAll()
+                        insertBannerList(bannerBeanDao, bannerList)
+                        Result.success(bannerList)
+                    }
                 } else {
-                    bannerBeanDao.deleteAll()
-                    insertBannerList(bannerBeanDao, bannerList)
-                    Result.success(bannerList)
+                    Result.failure(RuntimeException("response status is ${bannerResponse.errorCode}  msg is ${bannerResponse.errorMsg}"))
                 }
-            } else {
-                Result.failure(RuntimeException("response status is ${bannerResponse.errorCode}  msg is ${bannerResponse.errorMsg}"))
             }
         }
     }
@@ -141,7 +145,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                     res.addAll(articleListTop)
                 } else {
                     val topArticleListDeferred =
-                        async { PlayAndroidNetwork.getTopArticleList() }
+                        async { PlayAndroidNetwork.getTopArticleList() } //异步
                     val topArticleList = topArticleListDeferred.await()
                     if (topArticleList.errorCode == 0) {
                         if (articleListTop.isNotEmpty() && articleListTop[0].link == topArticleList.data[0].link && !query.isRefresh) {
@@ -167,7 +171,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                     Result.success(res)
                 } else {
                     val articleListDeferred =
-                        async { PlayAndroidNetwork.getArticleList(query.page - 1) }
+                        async { PlayAndroidNetwork.getArticleList(query.page - 1) } //异步
                     val articleList = articleListDeferred.await()
                     if (articleList.errorCode == 0) {
                         if (articleListHome.isNotEmpty() && articleListHome[0].link == articleList.data.datas[0].link && !query.isRefresh) {
