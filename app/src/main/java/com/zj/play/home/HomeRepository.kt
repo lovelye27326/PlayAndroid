@@ -141,7 +141,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                     true
                 }
                 if (articleListTop.isNotEmpty() && downTopArticleTime > 0 &&
-                    downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isRefresh
+                    downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isRefresh //小于缓存保存的时间4小时，且非刷新状态时取缓存
                 ) {
                     res.addAll(articleListTop)
                 } else {
@@ -156,7 +156,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                             topArticleList.data.forEach {
                                 it.localType = HOME_TOP
                             }
-                            dataStore.saveLongData(
+                            dataStore.saveLongData( //设置保存数据缓存的时间
                                 DOWN_TOP_ARTICLE_TIME,
                                 System.currentTimeMillis()
                             )
@@ -165,7 +165,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                         }
                     }
                 }
-                //先获取一般文章，叠加一起
+                //再获取一般文章，叠加一起
                 if (articleListHome.isNotEmpty() && downArticleTime > 0 && downArticleTime - System.currentTimeMillis() < FOUR_HOUR
                     && !query.isRefresh
                 ) {
