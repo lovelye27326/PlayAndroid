@@ -141,7 +141,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                     true
                 }
                 if (articleListTop.isNotEmpty() && downTopArticleTime > 0 &&
-                    downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isRefresh //小于缓存保存的时间4小时，且非刷新状态时取缓存
+                    downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isNetRefresh //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
                 ) {
                     res.addAll(articleListTop)
                 } else {
@@ -149,7 +149,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                         async { PlayAndroidNetwork.getTopArticleList() } //异步
                     val topArticleList = topArticleListDeferred.await()
                     if (topArticleList.errorCode == 0) {
-                        if (articleListTop.isNotEmpty() && articleListTop[0].link == topArticleList.data[0].link && !query.isRefresh) {
+                        if (articleListTop.isNotEmpty() && articleListTop[0].link == topArticleList.data[0].link && !query.isNetRefresh) {
                             res.addAll(articleListTop)
                         } else {
                             res.addAll(topArticleList.data)
@@ -167,7 +167,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                 }
                 //再获取一般文章，叠加一起
                 if (articleListHome.isNotEmpty() && downArticleTime > 0 && downArticleTime - System.currentTimeMillis() < FOUR_HOUR
-                    && !query.isRefresh
+                    && !query.isNetRefresh
                 ) {
                     res.addAll(articleListHome)
                     Result.success(res)
@@ -176,7 +176,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                         async { PlayAndroidNetwork.getArticleList(query.page - 1) } //异步
                     val articleList = articleListDeferred.await()
                     if (articleList.errorCode == 0) {
-                        if (articleListHome.isNotEmpty() && articleListHome[0].link == articleList.data.datas[0].link && !query.isRefresh) {
+                        if (articleListHome.isNotEmpty() && articleListHome[0].link == articleList.data.datas[0].link && !query.isNetRefresh) {
                             res.addAll(articleListHome)
                         } else {
                             res.addAll(articleList.data.datas)

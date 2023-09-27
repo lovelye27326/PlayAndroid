@@ -31,7 +31,7 @@ class HomePageViewModel @Inject constructor(
     val articleList = ArrayList<Article>()
 
     val articleLiveData = Transformations.switchMap(pageLiveData) { query ->
-        homeRepository.getArticleList(query) //根据(page, isRefresh)的筛选条件api获取
+        homeRepository.getArticleList(query) //根据传入封装QueryHomeArticle(page, isRefresh)的query对象进行筛选条件api获取
     }
 
     fun getBanner() = homeRepository.getBanner()
