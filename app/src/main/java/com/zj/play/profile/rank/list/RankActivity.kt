@@ -29,7 +29,7 @@ class RankActivity : BaseListActivity() {
         super.initView()
         binding.baseListTitleBar.setTitle(getString(R.string.ranking_list))
         rankAdapter = RankAdapter(this, viewModel.dataList)
-        binding.baseListToTop.setAdapter(rankAdapter)
+        binding.baseListToTop.setAdapter(rankAdapter) //封装SmartRefreshLayout、RecyclerView的可点击滑动回顶部的列表控件
     }
 
     override fun isStaggeredGrid(): Boolean {

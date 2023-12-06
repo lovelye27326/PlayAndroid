@@ -23,6 +23,7 @@ class MainActivity : BaseActivity() {
     var isPort = true //是否竖直
 
     override fun initView() {
+        mTAG = "MainAct"
         isPort = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         when (isPort) {
             true -> binding.homeView?.init(supportFragmentManager, viewModel)

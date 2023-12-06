@@ -21,6 +21,8 @@ android {
         testInstrumentationRunner cfgs.testInstrumentationRunner
         consumerProguardFiles cfgs.consumerProguardFiles
         signingConfig signingConfigs.play
+
+        buildConfigField "boolean", "IS_DEBUG_BUILD", (findProperty("release") == "true" ? "false" : "true")
     }
 
     buildTypes {

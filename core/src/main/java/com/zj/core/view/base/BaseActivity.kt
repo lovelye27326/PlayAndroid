@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import com.scwang.smart.refresh.layout.util.SmartUtil.dp2px
 import com.zj.core.R
+import com.zj.core.util.LogUtil
 import com.zj.core.util.showToast
 import com.zj.core.util.transparentStatusBar
 import com.zj.core.view.base.lce.DefaultLceImpl
@@ -49,6 +50,7 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
     private var defaultLce: ILce? = null
 
     private var weakRefActivity: WeakReference<Activity>? = null
+    protected var mTAG = this.javaClass.simpleName.toString()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,6 +152,28 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
     override fun showNoContentView(tip: String) {
         defaultLce?.showNoContentView(tip)
     }
+
+
+    override fun onStart() {
+        super.onStart()
+        LogUtil.i("BaseActivity:onStart: $mTAG")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        LogUtil.i("BaseActivity:onResume: $mTAG")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        LogUtil.i("BaseActivity:onPause: $mTAG")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LogUtil.i("BaseActivity:onStop: $mTAG")
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

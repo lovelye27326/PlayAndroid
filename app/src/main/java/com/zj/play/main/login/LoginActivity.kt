@@ -35,6 +35,7 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
     }
 
     override fun initView() {
+        mTAG = "LoginAct"
         binding.loginButton.setOnClickListener(this)
         binding.loginTvRegister.setOnClickListener(this)
         binding.loginPassNumberClear.setOnClickListener(this)
@@ -57,6 +58,7 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
             }
         }
     }
+
 
     override fun onClick(v: View) {
         when (v.id) {
@@ -120,11 +122,11 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
     private fun judge(): Boolean {
         mUserName = binding.loginUserNumberEdit.text.toString()
         mPassWord = binding.loginPassNumberEdit.text.toString()
-        if (TextUtils.isEmpty(mUserName) || mUserName.length < 6) {
+        if (TextUtils.isEmpty(mUserName) || mUserName.length < 5) {
             binding.loginUserNumberEdit.error = getString(R.string.enter_name_format)
             return false
         }
-        if (TextUtils.isEmpty(mPassWord) || mPassWord.length < 6) {
+        if (TextUtils.isEmpty(mPassWord) || mPassWord.length < 5) {
             binding.loginPassNumberEdit.error = getString(R.string.enter_password_format)
             return false
         }

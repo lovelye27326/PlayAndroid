@@ -21,6 +21,7 @@ class WelcomeActivity : BaseActivity(),
         return binding.root
     }
 
+
     private fun initAnimation() {
         val rotateAnimation = RotateAnimation(
             0f, 360f,
