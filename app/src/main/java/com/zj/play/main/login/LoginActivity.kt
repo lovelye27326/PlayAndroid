@@ -16,7 +16,10 @@ import androidx.core.view.isVisible
 import com.zj.core.util.checkNetworkAvailable
 import com.zj.core.util.showToast
 import com.zj.core.view.base.BaseActivity
+import com.zj.network.base.PlayAndroidNetwork
 import com.zj.play.R
+import com.zj.play.base.GetProjects
+import com.zj.play.base.UseCase
 import com.zj.play.databinding.ActivityLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -161,4 +164,12 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
         }
     }
 
+
+    /**
+     * 使用useCase的挂起登录函数
+     */
+    private suspend fun login() {
+        val useCase = UseCase(GetProjects(PlayAndroidNetwork.loginService))
+        useCase.getProjects(mUserName, mPassWord)
+    }
 }

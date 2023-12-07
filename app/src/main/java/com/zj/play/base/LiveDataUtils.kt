@@ -3,6 +3,8 @@ package com.zj.play.base
 import android.util.Log
 import androidx.lifecycle.liveData
 import com.zj.model.model.BaseModel
+import com.zj.model.model.Login
+import com.zj.network.service.LoginService
 
 private const val TAG = "LiveDataUtils"
 
@@ -37,3 +39,4 @@ fun <T> liveDataFire(block: suspend () -> Result<T>) =
         }
         emit(result)
     }
+

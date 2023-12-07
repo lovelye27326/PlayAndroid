@@ -21,6 +21,7 @@ object Play {
 
     /**
      * 获取全局Context，在代码的任意位置都可以调用，随时都能获取到全局Context对象。
+     * 会报警StaticFieldLeak
      *
      * @return 全局Context对象。
      */

@@ -2,6 +2,8 @@ package com.zj.play.base
 
 import android.util.Log
 import com.zj.model.model.BaseModel
+import com.zj.model.model.Login
+import com.zj.network.service.LoginService
 import kotlinx.coroutines.*
 
 /**
@@ -70,4 +72,15 @@ private const val TAG = "ScopeExt"
 
 private fun showToast(isShow: Boolean, msg: String?) {
     Log.e(TAG, "showToast: isShow:$isShow   msg:$msg")
+}
+
+data class UseCase(
+    val getProjects: GetProjects
+)
+
+
+class GetProjects(private val service: LoginService) {
+    suspend operator fun invoke(username: String, password: String): BaseModel<Login> {
+        return service.getLogin(username, password)
+    }
 }

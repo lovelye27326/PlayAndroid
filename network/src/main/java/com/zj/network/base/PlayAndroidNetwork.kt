@@ -37,7 +37,7 @@ object PlayAndroidNetwork {
 
     suspend fun getWxArticle(page: Int, cid: Int) = officialService.getWxArticle(page, cid)
 
-    private val loginService = ServiceCreator.create(LoginService::class.java)
+    val loginService = ServiceCreator.create(LoginService::class.java)
 
     suspend fun getLogin(username: String, password: String) =
         loginService.getLogin(username, password)
