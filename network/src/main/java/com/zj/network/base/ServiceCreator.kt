@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  */
 object ServiceCreator {
 
-    private const val BASE_URL = "https://www.wanandroid.com/"
+    const val BASE_URL = "https://www.wanandroid.com/"
     private const val SAVE_USER_LOGIN_KEY = "user/login"
     private const val SAVE_USER_REGISTER_KEY = "user/register"
     private const val SET_COOKIE_KEY = "set-cookie"
@@ -25,7 +25,7 @@ object ServiceCreator {
     private const val READ_TIMEOUT = 10L
 
 
-    private val okHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    val okHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         OkHttpClient().newBuilder().apply {
             connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)

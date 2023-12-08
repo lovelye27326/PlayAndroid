@@ -1,10 +1,12 @@
 package com.zj.play.base
 
-import android.util.Log
+import com.zj.core.util.LogUtil
 import com.zj.model.model.BaseModel
 import com.zj.model.model.Login
 import com.zj.network.service.LoginService
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
+import javax.inject.Inject
 
 /**
  * create by Rui on 2022/8/30
@@ -22,7 +24,7 @@ fun <T> CoroutineScope.http(
     showToast: Boolean = true
 
 ): Job {
-    return this.launch() {
+    return this.launch {
         try {
             val result = request()
             if (result.errorCode == 0) {
@@ -71,16 +73,30 @@ fun <T> CoroutineScope.http2(
 private const val TAG = "ScopeExt"
 
 private fun showToast(isShow: Boolean, msg: String?) {
-    Log.e(TAG, "showToast: isShow:$isShow   msg:$msg")
+    LogUtil.e(TAG, "showToast: isShow:$isShow   msg:$msg")
 }
 
-data class UseCase(
-    val getProjects: GetProjects
+
+@ActivityRetainedScoped
+class UserUseCase @Inject constructor(
+    val getLoginProjects: GetLoginProjects,
+    val getRegisterProjects: GetRegisterProjects
 )
 
-
-class GetProjects(private val service: LoginService) {
+@ActivityRetainedScoped
+class GetLoginProjects @Inject constructor(private val service: LoginService) {
     suspend operator fun invoke(username: String, password: String): BaseModel<Login> {
         return service.getLogin(username, password)
+    }
+}
+
+@ActivityRetainedScoped
+class GetRegisterProjects @Inject constructor(private val service: LoginService) {
+    suspend operator fun invoke(
+        username: String,
+        password: String,
+        surePassword: String
+    ): BaseModel<Login> {
+        return service.getRegister(username, password, surePassword)
     }
 }
