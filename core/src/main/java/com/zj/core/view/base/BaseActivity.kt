@@ -56,8 +56,8 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
         super.onCreate(savedInstanceState)
         transparentStatusBar()
         setContentView(getLayoutView())
-        ActivityCollector.add(WeakReference(this))
         weakRefActivity = WeakReference(this)
+        ActivityCollector.add(weakRefActivity)
         initView()
         initData()
     }

@@ -21,7 +21,7 @@ ext {
     sign = [
             file         : 'D:/suncars.jks',
             storePassword: '123456',
-            keyAlias     : 'wanAndroid',
+            keyAlias     : 'suncar',
             keyPassword  : '123456'
     ]
 

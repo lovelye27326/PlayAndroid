@@ -66,7 +66,8 @@ dependencies {
     implementation project(path: ':model')
 
     // 内存泄漏检测
-    //implementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
+    // debugImplementation because LeakCanary should only run in debug builds.
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
 
     // hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
@@ -80,4 +81,7 @@ dependencies {
     androidTestImplementation des.espressoCore
     implementation project(path: ':core')
     implementation project(path: ':network')
+
+    // 添加日志弹窗依赖
+    debugImplementation 'com.github.coder-pig:CpNetworkCapture:0.0.11'
 }
