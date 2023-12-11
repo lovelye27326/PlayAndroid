@@ -41,13 +41,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providerLoginService(retrofit: Retrofit): LoginService {  //通过构造函数传入retrofit
+    fun providerLoginService(retrofit: Retrofit): LoginService {  //通过函数参数传入retrofit
         return retrofit.create(LoginService::class.java)
     }
 
     @Singleton
     @Provides
-    fun providerGetLoginProjects(service: LoginService): GetLoginProjects { //通过构造函数传入service
+    fun providerGetLoginProjects(service: LoginService): GetLoginProjects { //通过函数参数传入service
         return GetLoginProjects(service)
     }
 
