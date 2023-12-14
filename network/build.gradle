@@ -30,16 +30,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 }
 
 dependencies {
-
     implementation des.kotlinVersion
     implementation des.coreKtx
     implementation des.appcompat
@@ -48,4 +47,6 @@ dependencies {
     testImplementation des.junit
     androidTestImplementation des.extJunit
     androidTestImplementation des.espressoCore
+    // 添加日志弹窗依赖
+    debugImplementation 'com.github.coder-pig:CpNetworkCapture:0.0.11'
 }

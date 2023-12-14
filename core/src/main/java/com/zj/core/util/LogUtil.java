@@ -9,7 +9,7 @@ import com.zj.core.BuildConfig;
  * 日志打印管理
  */
 public class LogUtil {
-  private static final boolean DEBUG_MODE = BuildConfig.IS_DEBUG_BUILD; //在 defaultConfig 块中定义的一个自定义的 build config 字段，
+  public static final boolean DEBUG_MODE = BuildConfig.IS_DEBUG_BUILD; //在 defaultConfig 块中定义的一个自定义的 build config 字段，
   // 在主工程里也可以用IS_DEBUG_BUILD来判断
 
   public static void v(String tag, String msg) {

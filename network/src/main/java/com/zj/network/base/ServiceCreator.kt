@@ -1,6 +1,8 @@
 package com.zj.network.base
 
+import cn.coderpig.cp_network_capture.interceptor.CaptureInterceptor
 import com.zj.core.util.DataStoreUtils
+import com.zj.core.util.LogUtil
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -25,12 +27,15 @@ object ServiceCreator {
     private const val READ_TIMEOUT = 10L
 
 
-    val okHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    val okHttpClient: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         OkHttpClient().newBuilder().apply {
             connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+            if (LogUtil.DEBUG_MODE) {
+                addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                addLogPopWin(this)
+            }
             // get response cookie
-            addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             addInterceptor {
                 val request = it.request()
                 val response = it.proceed(request)
@@ -86,6 +91,28 @@ object ServiceCreator {
         DataStoreUtils.putSyncData(url, cookies)
         domain ?: return
         DataStoreUtils.putSyncData(domain, cookies)
+    }
+
+
+    /**
+     * 添加日志助手
+     */
+    private fun addLogPopWin(builder: OkHttpClient.Builder) {
+        val interceptor = CaptureInterceptor()
+        builder.addInterceptor(interceptor)
+
+        //在主模块依赖时使用反射获取日志弹窗抓包拦截器类实例初始化
+//        var captureInterceptor: Interceptor? = null
+//        try {
+//            val clazz =
+//                Class.forName("cn.coderpig.cp_network_capture.interceptor.CaptureInterceptor")
+//            val constructor = clazz.getDeclaredConstructor()
+//            captureInterceptor = constructor.newInstance() as Interceptor
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//        // 抓包拦截器不为null，添加拦截器
+//        captureInterceptor?.let { builder.addInterceptor(it) }
     }
 
 }

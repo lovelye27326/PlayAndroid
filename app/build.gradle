@@ -81,7 +81,4 @@ dependencies {
     androidTestImplementation des.espressoCore
     implementation project(path: ':core')
     implementation project(path: ':network')
-
-    // 添加日志弹窗依赖
-    debugImplementation 'com.github.coder-pig:CpNetworkCapture:0.0.11'
 }
