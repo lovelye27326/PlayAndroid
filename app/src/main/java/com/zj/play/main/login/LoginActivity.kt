@@ -16,6 +16,7 @@ import androidx.core.view.isVisible
 import com.zj.core.util.checkNetworkAvailable
 import com.zj.core.util.showToast
 import com.zj.core.view.base.BaseActivity
+import com.zj.network.action.LoaderState
 import com.zj.play.R
 import com.zj.play.databinding.ActivityLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,7 +25,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
 
     private lateinit var binding: ActivityLoginBinding
-//    private val viewModel by viewModels<LoginViewModel>()
+
+    //    private val viewModel by viewModels<LoginViewModel>()
     private val viewModel by viewModels<LoginViewModelHilt>()
     private var mUserName = ""
     private var mPassWord = ""
@@ -44,6 +46,23 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
         binding.loginPassNumberEdit.addTextChangedListener(this)
         binding.loginPassNumberEdit.transformationMethod =
             PasswordTransformationMethod.getInstance()
+        viewModel.stateData.observe(this) {
+            it?.let { data ->
+                when (data) {
+                    LoaderState.STATE_LOADING -> {
+                        toProgressVisible(true)
+                    }
+//                    LoaderState.STATE_SUCCESS -> {
+//                        toProgressVisible(false)
+//                        finish()
+//                    }
+                    LoaderState.STATE_NET_ERROR, LoaderState.STATE_SOURCE_ERROR -> {
+                        toProgressVisible(false)
+                    }
+                }
+            }
+        }
+
         viewModel.state.observe(this) {
             when (it) {
                 Logging -> {

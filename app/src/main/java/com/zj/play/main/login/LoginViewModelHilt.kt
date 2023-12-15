@@ -116,8 +116,8 @@ class LoginViewModelHilt @Inject constructor(
     private fun login2(account: Account) {
         viewModelScope.netRequest {
             start {
-                _state.postValue(Logging) //MVI 传递对象方式
                 _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
+//                _state.postValue(Logging) //MVI 传递对象方式
             }
             request { userUseCase.getLoginProjects(account.username, account.password) }
             success {
@@ -129,7 +129,7 @@ class LoginViewModelHilt @Inject constructor(
                 } else {
                     _stateData.value = LoaderState.STATE_NET_ERROR
                 }
-                _state.postValue(LoginError)
+//                _state.postValue(LoginError)
             }
             finish {
                 _stateData.value = LoaderState.STATE_SUCCESS //liveDate传int方式
