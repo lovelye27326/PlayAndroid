@@ -12,10 +12,6 @@ import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
 /**
- * 版权：Zhujiang 个人版权
- *
- * @author zhujiang
- * 创建日期：12/3/20
  *
  * 异步获取数据
  * [getData] [readBooleanFlow] [readFloatFlow] [readIntFlow] [readLongFlow] [readStringFlow]
@@ -59,7 +55,7 @@ object DataStoreUtils {
             is Int -> readIntData(key, default)
             is Boolean -> readBooleanData(key, default)
             is Float -> readFloatData(key, default)
-            else -> throw IllegalArgumentException("This type can be saved into DataStore")
+            else -> throw IllegalArgumentException("This type can not be saved into DataStore")
         }
         return res as U
     }
@@ -72,7 +68,7 @@ object DataStoreUtils {
             is Int -> readIntFlow(key, default)
             is Boolean -> readBooleanFlow(key, default)
             is Float -> readFloatFlow(key, default)
-            else -> throw IllegalArgumentException("This type can be saved into DataStore")
+            else -> throw IllegalArgumentException("This type can not be saved into DataStore")
         }
         return data as Flow<U>
     }
@@ -84,7 +80,7 @@ object DataStoreUtils {
             is Int -> saveIntData(key, value)
             is Boolean -> saveBooleanData(key, value)
             is Float -> saveFloatData(key, value)
-            else -> throw IllegalArgumentException("This type can be saved into DataStore")
+            else -> throw IllegalArgumentException("This type can not be saved into DataStore")
         }
     }
 
@@ -95,7 +91,7 @@ object DataStoreUtils {
             is Int -> saveSyncIntData(key, value)
             is Boolean -> saveSyncBooleanData(key, value)
             is Float -> saveSyncFloatData(key, value)
-            else -> throw IllegalArgumentException("This type can be saved into DataStore")
+            else -> throw IllegalArgumentException("This type can not be saved into DataStore")
         }
     }
 
