@@ -3,12 +3,8 @@ package com.zj.network.base
 import com.zj.network.service.*
 
 /**
- * 版权：Zhujiang 个人版权
- * @author zhujiang
- * 版本：1.5
- * 创建日期：2020/4/30
- * 描述：SunnyWeather
- *
+ *  object单例
+ *  网络请求帮助类，用于请求的创建 RetrofitHelper
  */
 object PlayAndroidNetwork {
 

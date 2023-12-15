@@ -3,15 +3,41 @@ package com.zj.play.base
 import com.zj.core.util.LogUtil
 import com.zj.model.model.BaseModel
 import com.zj.model.model.Login
+import com.zj.model.model.isSuccess
+import com.zj.network.action.RequestAction
+import com.zj.network.exception.HandleException
 import com.zj.network.service.LoginService
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
 /**
- * create by Rui on 2022/8/30
  * desc: 协程http 请求扩展
  */
+
+fun <T> CoroutineScope.netRequest(block: RequestAction<T>.() -> Unit) {
+    val action = RequestAction<T>().apply(block)
+    this.launch {
+        try {
+            action.start?.invoke()
+            val result = action.request?.invoke()
+            if (result.isSuccess()) {
+                action.success?.invoke(result!!.data)
+            } else {
+                if (result != null) {
+                    action.error?.invoke(result.errorMsg + "|" + result.errorCode)
+                } else {
+                    action.error?.invoke("|")
+                }
+            }
+        } catch (ex: Exception) {
+            // 可以做一些定制化的返回错误提示
+            action.error?.invoke(HandleException.handleResponseError(ex))
+        } finally {
+            action.finish?.invoke()
+        }
+    }
+}
 
 
 /**
@@ -22,7 +48,6 @@ fun <T> CoroutineScope.http(
     response: (T?) -> Unit,
     error: (String) -> Unit = {},
     showToast: Boolean = true
-
 ): Job {
     return this.launch {
         try {
@@ -51,7 +76,6 @@ fun <T> CoroutineScope.http2(
     dispatcher: CoroutineDispatcher = Dispatchers.Main,
     error: (String) -> Unit = {},
     showToast: Boolean = true
-
 ): Job {
     return this.launch(dispatcher) {
         try {

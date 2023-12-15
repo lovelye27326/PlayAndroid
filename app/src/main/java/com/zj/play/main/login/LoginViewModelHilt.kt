@@ -3,15 +3,17 @@ package com.zj.play.main.login
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.zj.core.Play
 import com.zj.core.util.showToast
 import com.zj.model.model.Login
+import com.zj.network.action.LoaderState
 import com.zj.play.R
 import com.zj.play.article.ArticleBroadCast
 import com.zj.play.base.UserUseCase
 import com.zj.play.base.http
+import com.zj.play.base.netRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -61,24 +63,45 @@ val myViewModel = hiltViewModel<MyViewModel>()
  */
 @HiltViewModel
 class LoginViewModelHilt @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     application: Application,
     private val userUseCase: UserUseCase
 ) : AndroidViewModel(application) {
 
-    private val _state = MutableLiveData<LoginState>()
-    val state: LiveData<LoginState>
+    companion object {
+        private const val KEY_INFO = "key_info"
+        private const val KEY_STATE = "state"
+    }
+
+    //region 数据加载状态
+    private val _stateData = savedStateHandle.getLiveData<Int>(KEY_STATE)
+    val stateData: LiveData<Int> get() = _stateData
+
+    init {
+        _stateData.value = LoaderState.STATE_INITIALIZED
+    }
+
+    //endregion
+
+
+    private val _state = savedStateHandle.getLiveData<LoginState>(
+        KEY_INFO
+    )
+    val state: LiveData<LoginState?>
         get() = _state
 
     fun toLoginOrRegister(account: Account) {
-        _state.postValue(Logging)
         if (account.isLogin) {
-            login(account)
+            login2(account)
+//            login(account)
         } else {
+            _state.postValue(Logging)
             register(account)
         }
     }
 
     private fun login(account: Account) {
+        _state.postValue(Logging)
         viewModelScope.http(
             request = { userUseCase.getLoginProjects(account.username, account.password) },
             response = { success(it, account.isLogin) },
@@ -86,6 +109,33 @@ class LoginViewModelHilt @Inject constructor(
         )
     }
 
+
+    /**
+     * 封装action，形成类似DSL风格
+     */
+    private fun login2(account: Account) {
+        viewModelScope.netRequest {
+            start {
+                _state.postValue(Logging) //MVI 传递对象方式
+                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
+            }
+            request { userUseCase.getLoginProjects(account.username, account.password) }
+            success {
+                success(it, account.isLogin)
+            }
+            error {
+                if (it.contains("|")) { //liveDate传int方式
+                    _stateData.value = LoaderState.STATE_SOURCE_ERROR
+                } else {
+                    _stateData.value = LoaderState.STATE_NET_ERROR
+                }
+                _state.postValue(LoginError)
+            }
+            finish {
+                _stateData.value = LoaderState.STATE_SUCCESS //liveDate传int方式
+            }
+        }
+    }
 
     private fun register(account: Account) {
         viewModelScope.http(

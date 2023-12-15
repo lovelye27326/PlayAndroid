@@ -56,6 +56,7 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
                 LoginError -> {
                     toProgressVisible(false)
                 }
+                else -> {}
             }
         }
     }

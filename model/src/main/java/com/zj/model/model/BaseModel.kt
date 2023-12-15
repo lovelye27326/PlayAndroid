@@ -1,16 +1,14 @@
 package com.zj.model.model
 
 /**
- * 版权：Zhujiang 个人版权
  *
- * @author zhujiang
- * 创建日期：2020/9/22
- * 描述：PlayAndroid
- *
+ * 基类
  */
-
+const val SUCCESS_CODE = 0
 data class BaseModel<T>(
     val `data`: T,
     val errorCode: Int,
     val errorMsg: String
 )
+
+fun<T> BaseModel<T>?.isSuccess() = this?.errorCode == SUCCESS_CODE

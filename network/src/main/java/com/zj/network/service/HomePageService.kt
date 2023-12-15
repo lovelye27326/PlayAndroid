@@ -11,12 +11,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * 版权：Zhujiang 个人版权
- * @author zhujiang
- * 版本：1.5
- * 创建日期：2020/4/30
- * 描述：SunnyWeather
- *
+ *  首页
  */
 interface HomePageService {
 
