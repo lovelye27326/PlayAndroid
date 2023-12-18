@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.zj.core.view.custom.TitleBar
+    <com.yfy.core.view.custom.TitleBar
         android:id="@+id/almanacTitleBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -10,8 +10,8 @@
         <categories android:name="android.shortcut.conversation" />
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="com.zj.play.home.search.SearchActivity"
-            android:targetPackage="com.zj.play" />
+            android:targetClass="com.yfy.play.home.search.SearchActivity"
+            android:targetPackage="com.yfy.play" />
     </shortcut>
     <shortcut
         android:enabled="true"
@@ -23,7 +23,7 @@
         <categories android:name="android.shortcut.conversation" />
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="com.zj.play.profile.share.add.AddShareActivity"
-            android:targetPackage="com.zj.play" />
+            android:targetClass="com.yfy.play.profile.share.add.AddShareActivity"
+            android:targetPackage="com.yfy.play" />
     </shortcut>
 </shortcuts>

@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".profile.ProfileFragment">
 
-    <com.zj.core.view.custom.TitleBar
+    <com.yfy.core.view.custom.TitleBar
         android:id="@+id/profileTitleBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
             android:layout_weight="1.5"
             android:background="@color/colorPrimary">
 
-            <com.zj.core.view.custom.RoundImageView
+            <com.yfy.core.view.custom.RoundImageView
                 android:id="@+id/profileIvHead"
                 android:layout_width="@dimen/dp_70"
                 android:layout_height="@dimen/dp_70"

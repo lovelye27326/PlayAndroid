@@ -56,7 +56,7 @@
 
     </FrameLayout>
 
-    <com.zj.core.view.custom.FlowLayout
+    <com.yfy.core.view.custom.FlowLayout
         android:id="@+id/searchFlowLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

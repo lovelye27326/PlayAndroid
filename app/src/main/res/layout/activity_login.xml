@@ -7,7 +7,7 @@
     android:background="@color/colorPrimaryDark"
     android:orientation="vertical">
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="@dimen/dp_70"
         android:layout_height="@dimen/dp_70"
         android:layout_gravity="center"
@@ -40,7 +40,7 @@
             android:orientation="vertical"
             tools:ignore="UselessParent">
 
-            <TextView
+            <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
@@ -64,7 +64,6 @@
                 android:textColorHint="@color/plain"
                 android:textSize="@dimen/sp_14"
                 tools:ignore="TextFields" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/dp_35"

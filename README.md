@@ -2,18 +2,13 @@
 
 ### 体验
 
-如果想要下载尝试下的话可以直接点击链接进行下载，或者扫描下面的二维码进行下载。
+如果想要下载尝试下的话可以直接可以点击下面链接：
 
-[https://www.pgyer.com/llj2](https://www.pgyer.com/llj2)
-
-![img](https://www.pgyer.com/app/qrcode/llj2)
-
-如果上面的下载次数用完的话可以点击下面链接：
-[https://github.com/zhujiang521/PlayAndroid/raw/master/apk/app-release_7zip_aligned_signed.apk](https://github.com/zhujiang521/PlayAndroid/raw/master/apk/app-release_7zip_aligned_signed.apk)
+[https://github.com/lovelyefyyucui/PlayAndroidYe/raw/master/apk/app-debug.apk](https://github.com/lovelyefyyucui/PlayAndroidYe/raw/master/apk/app-debug.apk)
 
 ### 玩安卓MVVM版截图
 
-首先来看下之前已经实现的大概样式吧：
+实现的大概样式：
 
 #### 初始样式
 
@@ -21,7 +16,6 @@
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2ade872693944653878bcdc083f95f38~tplv-k3u1fbpfcp-zoom-1.image) | ![](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/35da6aa74259481b97b5e72274065289~tplv-k3u1fbpfcp-zoom-1.image) |
 
-看着样式还好，但之前只是简单做了下，实现了最基本的功能，切换成横屏之后基本没办法看，更不要说分屏、夜间模式、本地缓存、无网弱网情况、无数据情况等等了，接下来看一下现在新增的适配页面吧。
 
 #### 夜间模式
 
@@ -43,15 +37,10 @@
 
 ### 实现过程
 
-项目用到了很多技术，基本上都是现在安卓app的最新标配，比如：MVVM、JetPack（LiveData、Room、ViewModel）、Retrofit、协程、Glide等等。
+项目使用比较多的较新的技术控件：MVVM、JetPack（LiveData、Room、ViewModel）、Retrofit、协程、Glide等等，还在不断优化中，
 
-其实在优化这个Demo的时候觉得做了好多事，但是真的让我写的时候就有点懵逼了，因为用到的东西比较多，随便拎出一个来都能单独写一篇文章；
+欢迎提issue.
 
-比如在apk大小的优化，这个apk最后被我优化到只剩3.3MB，现在随便一个apk都得几十MB吧。apk优化的挺多，比如代码混淆、资源文件的混淆、不需要的语言删除、图片转webp等等，如果想深入了解apk压缩的话，可以去看我之前写的这篇文章：[玩安卓必须要掌握的性能优化之APK极限压缩](https://zhujiang.blog.csdn.net/article/details/104434151)。
-
-又比如新增的浏览历史功能中用到了**Room**，没有**Room**的时候基本都在使用原生或者使用**LitePal**和**GreenDAO**等来实现，虽然**LitePal**和**GreenDAO**也是**ORM**的方式来实现的数据库操作，但是总体来说还是没有**Room**好用，**Room**写好实现的DAO接口文件即可，在你编译的时候会直接生成对应的实现类，真的很香。
-
-类似上面的还有很多，如果代码哪块写的不好或者有优化的地方欢迎大家告诉我或者给我提issues。
 
 ### 使用到的库
 
@@ -76,7 +65,7 @@ room
 ### License
 
 ```xml
-Copyright (c) 2020 朱江
+Copyright (c) 2023 叶峰云
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

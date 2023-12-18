@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.zj.play">
+    package="com.yfy.play">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -28,7 +28,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <application
-        android:name=".App"
+        android:name="com.yfy.play.App"
         android:allowBackup="true"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
@@ -39,40 +39,40 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:theme">
 
-        <activity android:name=".home.almanac.AlmanacActivity" />
-        <activity android:name=".profile.share.add.AddShareActivity" />
-        <activity android:name=".profile.share.ShareActivity" />
-        <activity android:name=".profile.history.BrowseHistoryActivity" />
+        <activity android:name="com.yfy.play.home.almanac.AlmanacActivity" />
+        <activity android:name="com.yfy.play.profile.share.add.AddShareActivity" />
+        <activity android:name="com.yfy.play.profile.share.ShareActivity" />
+        <activity android:name="com.yfy.play.profile.history.BrowseHistoryActivity" />
         <activity
-            android:name=".profile.user.UserActivity"
+            android:name="com.yfy.play.profile.user.UserActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".article.collect.CollectListActivity"
+            android:name="com.yfy.play.article.collect.CollectListActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".profile.rank.user.UserRankActivity"
+            android:name="com.yfy.play.profile.rank.user.UserRankActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".main.login.LoginActivity"
+            android:name="com.yfy.play.main.login.LoginActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".profile.rank.list.RankActivity"
+            android:name="com.yfy.play.profile.rank.list.RankActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".article.ArticleActivity"
+            android:name="com.yfy.play.article.ArticleActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize"
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
-            android:name=".home.search.article.ArticleListActivity"
+            android:name="com.yfy.play.home.search.article.ArticleListActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".home.search.SearchActivity"
+            android:name="com.yfy.play.home.search.SearchActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".main.MainActivity"
+            android:name="com.yfy.play.main.MainActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize" />
         <activity
-            android:name=".WelcomeActivity"
+            android:name="com.yfy.play.WelcomeActivity"
             android:configChanges="keyboardHidden|keyboard|screenSize|locale|navigation|smallestScreenSize"
             android:exported="true"
             android:theme="@style/WelcomeNoActionBar">
@@ -89,7 +89,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.zj.play.fileprovider"
+            android:authorities="com.yfy.play.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

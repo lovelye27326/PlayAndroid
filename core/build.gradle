@@ -15,6 +15,7 @@ android {
     compileSdkVersion cfgs.compileSdkVersion
 
     defaultConfig {
+        //applicationId "com.yfy.core"
         minSdkVersion cfgs.minSdkVersion
         targetSdkVersion cfgs.targetSdkVersion
 
