@@ -8,11 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.yfy.core.Play
 import com.yfy.core.util.showToast
 import com.yfy.model.model.Login
+import com.yfy.play.R
 import com.yfy.play.article.ArticleBroadCast
 import com.yfy.play.base.UserUseCase
 import com.yfy.play.base.http
 import com.yfy.play.base.netRequest
-import com.yfy.play.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -115,7 +115,7 @@ class LoginViewModelHilt @Inject constructor(
     private fun login2(account: Account) {
         viewModelScope.netRequest {
             start {
-                _state.postValue(LoginState.Logging) //MVI 传递对象方式
+                _state.value = LoginState.Logging //MVI 传递对象方式
 //                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
             }
             request { userUseCase.getLoginProjects(account.username, account.password) }
@@ -123,7 +123,7 @@ class LoginViewModelHilt @Inject constructor(
                 success(it, account.isLogin)
             }
             error {
-                _state.postValue(LoginState.LoginError(it))
+                _state.value = LoginState.LoginError(it)
 //                if (it.contains("|")) { //liveDate传int方式
 //                    _stateData.value = LoaderState.STATE_SOURCE_ERROR
 //                } else {
@@ -131,7 +131,7 @@ class LoginViewModelHilt @Inject constructor(
 //                }
             }
             finish {
-                _state.postValue(LoginState.Finishing) //MVI 传递对象方式
+                _state.value = LoginState.Finished  //MVI 传递对象方式
 //                _stateData.value = LoaderState.STATE_SUCCESS //liveDate传int方式
             }
         }

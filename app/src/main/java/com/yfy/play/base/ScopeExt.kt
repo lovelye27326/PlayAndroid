@@ -25,9 +25,11 @@ fun <T> CoroutineScope.netRequest(block: RequestAction<T>.() -> Unit) {
                 action.success?.invoke(result!!.data)
             } else {
                 if (result != null) {
+                    LogUtil.i("ScopeExt", "result: $result")
                     action.error?.invoke(result.errorMsg + "|" + result.errorCode)
                 } else {
-                    action.error?.invoke("error|")
+                    LogUtil.i("ScopeExt", "result: null")
+                    action.error?.invoke("null|")
                 }
             }
         } catch (ex: Exception) {

@@ -114,7 +114,7 @@ class LoginViewModel @Inject constructor(
 data class Account(val username: String, val password: String, val isLogin: Boolean)
 sealed class LoginState {
     object Logging : LoginState()
-    object Finishing : LoginState()
+    object Finished : LoginState()
     data class LoginSuccess(val login: Login) : LoginState()
 //    object LoginError : LoginState()
     data class LoginError(val errStr: String) : LoginState()

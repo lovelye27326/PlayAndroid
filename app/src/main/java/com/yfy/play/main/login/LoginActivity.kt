@@ -67,6 +67,9 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
                         showToast(it.errStr)
                     }
                 }
+                LoginState.Finished -> { //Logging是object声明的，不用is判断
+                    toProgressVisible(false)
+                }
                 else -> {}
             }
         }
