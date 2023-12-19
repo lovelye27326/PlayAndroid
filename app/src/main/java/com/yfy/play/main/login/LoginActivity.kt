@@ -183,12 +183,12 @@ class LoginActivity : BaseActivity(), TextWatcher {
         binding.loginPassClear?.isVisible = !s.isNullOrEmpty()
     }
 
-    companion object {
-        fun actionStart(context: Context) {
-            val intent = Intent(context, LoginActivity::class.java)
-            context.startActivity(intent)
-        }
-    }
+//    companion object {
+//        fun actionStart(context: Context) {
+//            val intent = Intent(context, LoginActivity::class.java)
+//            context.startActivity(intent)
+//        }
+//    }
 
 
     override fun onDestroy() {

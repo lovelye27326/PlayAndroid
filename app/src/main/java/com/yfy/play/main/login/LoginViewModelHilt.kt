@@ -143,6 +143,46 @@ class LoginViewModelHilt @Inject constructor(
 
 
     private fun register(account: Account) {
+        viewModelScope.netRequest {
+            start {
+                _state.value = LoginState.Logging //MVI 传递对象方式
+//                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
+            }
+            request {
+                LogUtil.i(
+                    "LoginViewModelHilt",
+                    "request start thread name: " + Thread.currentThread().name
+                ) //主线程里启动
+                userUseCase.getRegisterRepository(
+                    account.username,
+                    account.password,
+                    account.password
+                )
+            } //retrofit内部使用非主线程
+            success {
+                LogUtil.i(
+                    "LoginViewModelHilt",
+                    "success thread name: " + Thread.currentThread().name
+                )
+                success(it, account.isLogin)
+            }
+            error {
+                LogUtil.e("LoginViewModelHilt", "fail thread name: " + Thread.currentThread().name)
+                _state.value = LoginState.LoginError(it)
+//                if (it.contains("|")) { //liveDate传int方式
+//                    _stateData.value = LoaderState.STATE_SOURCE_ERROR
+//                } else {
+//                    _stateData.value = LoaderState.STATE_NET_ERROR
+//                }
+            }
+            finish {
+                _state.value = LoginState.Finished  //MVI 传递对象方式
+//                _stateData.value = LoaderState.STATE_SUCCESS //liveDate传int方式
+            }
+        }
+
+    }
+    private fun registerHttp(account: Account) {
         viewModelScope.http(
             request = {
                 userUseCase.getRegisterRepository(

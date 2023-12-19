@@ -62,7 +62,8 @@ class ProfileAdapter(
                 if (Play.isLoginResult()) {
                     CollectListActivity.actionStart(mContext)
                 } else {
-                    LoginActivity.actionStart(mContext)
+                    ActivityRouter.showLoginActivity(mContext as Activity)
+//                    LoginActivity.actionStart(mContext)
                 }
             }
             mContext.getString(R.string.mine_blog) -> {
