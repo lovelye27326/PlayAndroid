@@ -158,7 +158,7 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
         mPassWord = binding.loginPassNumberEdit.text.toString()
         if (TextUtils.isEmpty(mUserName) || mUserName.length < 5) {
             binding.loginUserNumberEdit.error =
-                getString(R.string.enter_name_format) //输入框设置error提示，偶尔看不到提示error提示框，不太好
+                getString(R.string.enter_name_format) //输入框设置error提示，偶尔会看不到提示error提示框，不太好
             return false
         }
         if (TextUtils.isEmpty(mPassWord) || mPassWord.length < 5) {

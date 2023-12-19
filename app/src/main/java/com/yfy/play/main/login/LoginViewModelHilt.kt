@@ -1,11 +1,12 @@
 package com.yfy.play.main.login
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yfy.core.Play
+import com.yfy.core.util.LogUtil
 import com.yfy.core.util.showToast
 import com.yfy.model.model.Login
 import com.yfy.play.R
@@ -63,13 +64,13 @@ val myViewModel = hiltViewModel<MyViewModel>()
 @HiltViewModel
 class LoginViewModelHilt @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    application: Application,
+    private val application: Application,
     private val userUseCase: UserUseCase
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     companion object {
         private const val KEY_INFO = "key_info"
-        private const val KEY_STATE = "state"
+//        private const val KEY_STATE = "state"
     }
 
     //  //region 数据加载状态
@@ -118,11 +119,15 @@ class LoginViewModelHilt @Inject constructor(
                 _state.value = LoginState.Logging //MVI 传递对象方式
 //                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
             }
-            request { userUseCase.getLoginProjects(account.username, account.password) }
+            request {
+                LogUtil.i("LoginViewModelHilt", "request start thread name: " + Thread.currentThread().name) //主线程里启动
+                userUseCase.getLoginProjects(account.username, account.password) } //retrofit内部使用非主线程
             success {
+                LogUtil.i("LoginViewModelHilt", "success thread name: " + Thread.currentThread().name)
                 success(it, account.isLogin)
             }
             error {
+                LogUtil.e("LoginViewModelHilt", "fail thread name: " + Thread.currentThread().name)
                 _state.value = LoginState.LoginError(it)
 //                if (it.contains("|")) { //liveDate传int方式
 //                    _stateData.value = LoaderState.STATE_SOURCE_ERROR
@@ -156,9 +161,9 @@ class LoginViewModelHilt @Inject constructor(
         _state.postValue(LoginState.LoginSuccess(it))
         Play.setLogin(true)
         Play.setUserInfo(it.nickname, it.username)
-        ArticleBroadCast.sendArticleChangesReceiver(context = getApplication())
-        getApplication<Application>().showToast(
-            if (isLogin) getApplication<Application>().getString(R.string.login_success) else getApplication<Application>().getString(
+        ArticleBroadCast.sendArticleChangesReceiver(context = application)
+        application.applicationContext.showToast(
+            if (isLogin) application.getString(R.string.login_success) else application.getString(
                 R.string.register_success
             )
         )
