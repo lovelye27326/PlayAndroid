@@ -13,24 +13,26 @@ import android.view.View
 import android.view.animation.OvershootInterpolator
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.yfy.core.util.LogUtil
 import com.yfy.core.util.checkNetworkAvailable
 import com.yfy.core.util.showToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
+import com.yfy.play.base.util.*
 import com.yfy.play.databinding.ActivityLoginBinding
+import com.yfy.play.main.login.bean.Account
+import com.yfy.play.main.login.bean.LoginState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
-
-    private lateinit var binding: ActivityLoginBinding
-
-    //    private val viewModel by viewModels<LoginViewModel>()
+class LoginActivity : BaseActivity(), TextWatcher {
+    private var binding by releasableNotNull<ActivityLoginBinding>()
     private val viewModel by viewModels<LoginViewModelHilt>()
     private var mUserName = ""
     private var mPassWord = ""
     private var mIsLogin = true
+
 
     override fun getLayoutView(): View {
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -39,13 +41,35 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
 
     override fun initView() {
         mTAG = "LoginAct"
-        binding.loginButton.setOnClickListener(this)
-        binding.loginTvRegister.setOnClickListener(this)
-        binding.loginPassNumberClear.setOnClickListener(this)
-        binding.loginPassNumberVisible.setOnClickListener(this)
-        binding.loginPassNumberEdit.addTextChangedListener(this)
-        binding.loginPassNumberEdit.transformationMethod =
-            PasswordTransformationMethod.getInstance()
+        binding.apply {
+            loginButton.clickTrigger(lifecycleScope) {
+                loginOrRegister()
+            }
+            loginTvRegister.clickTrigger(lifecycleScope) {
+                flipAnimatorXViewShow(loginInputElements)
+            }
+            loginPassClear?.clickTrigger(lifecycleScope) {
+                loginPassEdit?.setText("")
+            }
+            loginPassVisible?.clickTrigger(lifecycleScope) {
+                val transformationMethod = loginPassEdit?.transformationMethod
+                if (transformationMethod is PasswordTransformationMethod) {
+                    loginPassEdit!!.transformationMethod =
+                        HideReturnsTransformationMethod.getInstance()
+                    loginPassVisible.setColorFilter(getColor(R.color.colorLoading))
+                } else {
+                    loginPassEdit!!.transformationMethod =
+                        PasswordTransformationMethod.getInstance()
+                    loginPassVisible.setColorFilter(getColor(R.color.text_color_black))
+                }
+                loginPassEdit.setSelection(
+                    loginPassEdit.text.toString().trim().length
+                )
+            }
+            loginPassEdit?.addTextChangedListener(this@LoginActivity)
+            loginPassEdit?.transformationMethod =
+                PasswordTransformationMethod.getInstance()
+        }
 
 
         viewModel.state.observe(this) {
@@ -93,36 +117,6 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
 //        }
     }
 
-
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.loginTvRegister -> {
-                flipAnimatorXViewShow(binding.loginInputElements)
-            }
-            R.id.loginButton -> {
-                loginOrRegister()
-            }
-            R.id.loginPassNumberClear -> {
-                binding.loginPassNumberEdit.setText("")
-            }
-            R.id.loginPassNumberVisible -> {
-                val transformationMethod = binding.loginPassNumberEdit.transformationMethod
-                if (transformationMethod is PasswordTransformationMethod) {
-                    binding.loginPassNumberEdit.transformationMethod =
-                        HideReturnsTransformationMethod.getInstance()
-                    binding.loginPassNumberVisible.setColorFilter(getColor(R.color.colorLoading))
-                } else {
-                    binding.loginPassNumberEdit.transformationMethod =
-                        PasswordTransformationMethod.getInstance()
-                    binding.loginPassNumberVisible.setColorFilter(getColor(R.color.text_color_black))
-                }
-                binding.loginPassNumberEdit.setSelection(
-                    binding.loginPassNumberEdit.text.toString().trim().length
-                )
-            }
-        }
-    }
-
     private fun loginOrRegister() {
         if (!judge()) return
         viewModel.toLoginOrRegister(Account(mUserName, mPassWord, mIsLogin))
@@ -154,15 +148,15 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
     }
 
     private fun judge(): Boolean {
-        mUserName = binding.loginUserNumberEdit.text.toString()
-        mPassWord = binding.loginPassNumberEdit.text.toString()
+        mUserName = binding.loginUserNameEdit?.text.toString()
+        mPassWord = binding.loginPassEdit?.text.toString()
         if (TextUtils.isEmpty(mUserName) || mUserName.length < 5) {
-            binding.loginUserNumberEdit.error =
+            binding.loginUserNameEdit?.error =
                 getString(R.string.enter_name_format) //输入框设置error提示，偶尔会看不到提示error提示框，不太好
             return false
         }
         if (TextUtils.isEmpty(mPassWord) || mPassWord.length < 5) {
-            binding.loginPassNumberEdit.error = getString(R.string.enter_password_format)
+            binding.loginPassEdit?.error = getString(R.string.enter_password_format)
             return false
         }
         if (!checkNetworkAvailable()) {
@@ -186,7 +180,7 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
     }
 
     override fun afterTextChanged(s: Editable?) {
-        binding.loginPassNumberClear.isVisible = !s.isNullOrEmpty()
+        binding.loginPassClear?.isVisible = !s.isNullOrEmpty()
     }
 
     companion object {
@@ -197,11 +191,13 @@ class LoginActivity : BaseActivity(), View.OnClickListener, TextWatcher {
     }
 
 
-    /**
-     * 使用useCase的挂起登录函数
-     */
-//    private suspend fun login() {
-//        val useCase = UseCase(GetLoginProjects(PlayAndroidNetwork.loginService))
-//        useCase.getLoginProjects(mUserName, mPassWord)
-//    }
+    override fun onDestroy() {
+        if (::binding.isInitialed()) {
+            ::binding.release()
+        }
+        super.onDestroy()
+        PermissionUtil.fixInputMethodManagerLeak(this)
+    }
+
+
 }

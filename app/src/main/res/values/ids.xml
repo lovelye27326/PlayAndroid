@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <item type="id"
+      name="tag_position_key" />
+  <item name="statusbarutil_fake_status_bar_view"
+      type="id" />
+  <item name="statusbarutil_translucent_view"
+      type="id" />
+  <item name="tag_pos_key"
+      type="id">
+  </item>
+
+
+  <item name="tag_order_operation"
+      type="id"/>
+
+  <item name="tag_cart_operation"
+      type="id"/>
+</resources>

@@ -105,19 +105,19 @@ private fun showToast(isShow: Boolean, msg: String?) {
 
 @ActivityRetainedScoped
 class UserUseCase @Inject constructor(
-    val getLoginProjects: GetLoginProjects,
-    val getRegisterProjects: GetRegisterProjects
+    val getLoginRepository: GetLoginRepository,
+    val getRegisterRepository: GetRegisterRepository
 )
 
 @ActivityRetainedScoped
-class GetLoginProjects @Inject constructor(private val service: LoginService) {
+class GetLoginRepository @Inject constructor(private val service: LoginService) {
     suspend operator fun invoke(username: String, password: String): BaseModel<Login> {
         return service.getLogin(username, password)
     }
 }
 
 @ActivityRetainedScoped
-class GetRegisterProjects @Inject constructor(private val service: LoginService) {
+class GetRegisterRepository @Inject constructor(private val service: LoginService) {
     suspend operator fun invoke(
         username: String,
         password: String,

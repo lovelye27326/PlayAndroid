@@ -82,4 +82,18 @@
     <string name="static_shortcut_long_label_add_share">New article sharing</string>
     <string name="static_shortcut_short_label_add_share">New share</string>
 
+
+    <!--%d\u0020 年前  空格  -->
+    <string name="before_hour"
+        formatted="false">%d hour before</string>
+    <string name="before_day"
+        formatted="false">%d\ day before </string>
+    <string name="before_month"
+        formatted="false">%d month before</string>
+    <string name="before_year"
+        formatted="false">%d year before</string>
+    <string name="before_half_hour">half hour before</string>
+    <string name="before_min"
+        formatted="false">%d min before</string>
+    <string name="just_now">just now</string>
 </resources>

@@ -48,23 +48,23 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providerGetLoginProjects(service: LoginService): GetLoginProjects { //通过函数参数传入service
-        return GetLoginProjects(service)
+    fun providerGetLoginRepository(service: LoginService): GetLoginRepository { //通过函数参数传入service
+        return GetLoginRepository(service)
     }
 
     @Singleton
     @Provides
-    fun providerRegisterProjects(service: LoginService): GetRegisterProjects {
-        return GetRegisterProjects(service)
+    fun providerRegisterRepository(service: LoginService): GetRegisterRepository {
+        return GetRegisterRepository(service)
     }
 
     @Singleton
     @Provides
     fun providerUserUseCase(
-        getLoginProjects: GetLoginProjects,
-        getRegisterProjects: GetRegisterProjects
+        getLoginRepository: GetLoginRepository,
+        getRegisterRepository: GetRegisterRepository
     ): UserUseCase {
-        return UserUseCase(getLoginProjects, getRegisterProjects)
+        return UserUseCase(getLoginRepository, getRegisterRepository)
     }
 
 

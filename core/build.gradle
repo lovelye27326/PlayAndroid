@@ -92,6 +92,7 @@ dependencies {
     def fragment_version = "1.5.2"
     api "androidx.fragment:fragment-ktx:$fragment_version"
 
+    api "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
     testImplementation des.junit
     androidTestImplementation des.extJunit
     androidTestImplementation des.espressoCore

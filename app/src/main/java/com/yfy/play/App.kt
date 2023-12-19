@@ -6,6 +6,7 @@ import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.tencent.bugly.crashreport.CrashReport
 import com.yfy.core.Play
+import com.yfy.play.base.util.*
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,14 +30,31 @@ class App : Application() {
 
     private fun initData() {
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            initValidators()
             initBugLy()
         }
     }
 
     private fun initBugLy() {
-        // Bugly bug上报
-        CrashReport.initCrashReport(applicationContext, "0f4f8e06b4", false)
+        CrashReport.initCrashReport(applicationContext, "8452e4117f", false) //AppId
     }
+
+
+    /**
+     * 输入效验器初始化
+     */
+    private fun initValidators() {
+        Validators.registerValidator(String::class, DefaultStringValidator)
+        Validators.registerValidator(Int::class, DefaultIntValidator)
+        Validators.registerValidator(Long::class, DefaultLongValidator)
+        Validators.registerValidator(Double::class, DefaultDoubleValidator)
+        Validators.registerValidator(Boolean::class, DefaultBooleanValidator)
+        Validators.registerValidator(Any::class, DefaultAnyValidator)
+        Validators.registerValidator(PhoneInfo::class, DefaultPhoneValidator)
+        Validators.registerValidator(IdCardNoInfo::class, DefaultIdCardNoValidator)
+        Validators.registerValidator(BankCardNoLengthInfo::class, DefaultBankCardNoLengthValidator)
+    }
+
 
     companion object {
         //static 代码段可以防止内存泄露

@@ -65,6 +65,9 @@ dependencies {
 
     implementation project(path: ':model')
 
+
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+
     // 内存泄漏检测
     // debugImplementation because LeakCanary should only run in debug builds.
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'

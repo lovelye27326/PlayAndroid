@@ -14,6 +14,8 @@ import com.yfy.play.article.ArticleBroadCast
 import com.yfy.play.base.UserUseCase
 import com.yfy.play.base.http
 import com.yfy.play.base.netRequest
+import com.yfy.play.main.login.bean.Account
+import com.yfy.play.main.login.bean.LoginState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -92,38 +94,35 @@ class LoginViewModelHilt @Inject constructor(
 
     fun toLoginOrRegister(account: Account) {
         if (account.isLogin) {
-            login2(account)
-//            login(account)
+            login(account)
+//            loginHttp(account)
         } else {
             _state.postValue(LoginState.Logging)
             register(account)
         }
     }
 
-    private fun login(account: Account) {
-        _state.postValue(LoginState.Logging)
-        viewModelScope.http(
-            request = { userUseCase.getLoginProjects(account.username, account.password) },
-            response = { success(it, account.isLogin) },
-            error = { _state.postValue(LoginState.LoginError(it)) }
-        )
-    }
-
-
     /**
      * 封装action，形成类似DSL风格
      */
-    private fun login2(account: Account) {
+    private fun login(account: Account) {
         viewModelScope.netRequest {
             start {
                 _state.value = LoginState.Logging //MVI 传递对象方式
 //                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
             }
             request {
-                LogUtil.i("LoginViewModelHilt", "request start thread name: " + Thread.currentThread().name) //主线程里启动
-                userUseCase.getLoginProjects(account.username, account.password) } //retrofit内部使用非主线程
+                LogUtil.i(
+                    "LoginViewModelHilt",
+                    "request start thread name: " + Thread.currentThread().name
+                ) //主线程里启动
+                userUseCase.getLoginRepository(account.username, account.password)
+            } //retrofit内部使用非主线程
             success {
-                LogUtil.i("LoginViewModelHilt", "success thread name: " + Thread.currentThread().name)
+                LogUtil.i(
+                    "LoginViewModelHilt",
+                    "success thread name: " + Thread.currentThread().name
+                )
                 success(it, account.isLogin)
             }
             error {
@@ -142,10 +141,11 @@ class LoginViewModelHilt @Inject constructor(
         }
     }
 
+
     private fun register(account: Account) {
         viewModelScope.http(
             request = {
-                userUseCase.getRegisterProjects(
+                userUseCase.getRegisterRepository(
                     account.username,
                     account.password,
                     account.password
@@ -155,6 +155,17 @@ class LoginViewModelHilt @Inject constructor(
             error = { _state.postValue(LoginState.LoginError(it)) }
         )
     }
+
+
+    private fun loginHttp(account: Account) {
+        _state.postValue(LoginState.Logging)
+        viewModelScope.http(
+            request = { userUseCase.getLoginRepository(account.username, account.password) },
+            response = { success(it, account.isLogin) },
+            error = { _state.postValue(LoginState.LoginError(it)) }
+        )
+    }
+
 
     private fun success(it: Login?, isLogin: Boolean) {
         it ?: return
@@ -168,7 +179,6 @@ class LoginViewModelHilt @Inject constructor(
             )
         )
     }
-
 }
 
 
