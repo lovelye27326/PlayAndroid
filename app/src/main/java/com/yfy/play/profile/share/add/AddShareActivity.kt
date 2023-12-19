@@ -9,10 +9,10 @@ import com.yfy.core.Play
 import com.yfy.core.util.isHttpUrl
 import com.yfy.core.util.showToast
 import com.yfy.core.view.base.BaseActivity
-import com.yfy.play.main.login.LoginActivity
-import com.yfy.play.profile.share.ShareRepository
 import com.yfy.play.R
+import com.yfy.play.base.util.ActivityRouter
 import com.yfy.play.databinding.ActivityAddShareBinding
+import com.yfy.play.profile.share.ShareRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -48,7 +48,8 @@ class AddShareActivity : BaseActivity(), View.OnClickListener {
             Play.isLogin().first {
                 if (!it) {
                     showToast(getString(R.string.not_currently_logged_in))
-                    LoginActivity.actionStart(this@AddShareActivity)
+                    ActivityRouter.showLoginActivity(this@AddShareActivity)
+//                    LoginActivity.actionStart(this@AddShareActivity)
                 }
                 it
             }

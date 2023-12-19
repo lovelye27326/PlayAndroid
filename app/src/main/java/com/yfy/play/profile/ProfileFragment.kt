@@ -1,5 +1,6 @@
 package com.yfy.play.profile
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import com.yfy.core.Play
 import com.yfy.core.Play.logout
 import com.yfy.play.R
 import com.yfy.play.article.ArticleBroadCast
+import com.yfy.play.base.util.ActivityRouter
 import com.yfy.play.databinding.FragmentProfileBinding
 import com.yfy.play.home.ArticleCollectBaseFragment
 import com.yfy.play.main.login.AccountRepository
@@ -144,11 +146,13 @@ class ProfileFragment : ArticleCollectBaseFragment(), View.OnClickListener {
 
     private fun personalInformation() {
         if (!Play.isLoginResult()) {
-            LoginActivity.actionStart(requireContext())
+            ActivityRouter.showLoginActivity(requireActivity())
+//            LoginActivity.actionStart(requireContext())
         } else {
             ShareActivity.actionStart(requireContext(), true)
         }
     }
+
 
     companion object {
         @JvmStatic

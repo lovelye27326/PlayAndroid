@@ -1,5 +1,6 @@
 package com.yfy.play.profile
 
+import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import com.yfy.core.view.base.BaseRecyclerAdapter
 import com.yfy.play.R
 import com.yfy.play.article.ArticleActivity
 import com.yfy.play.article.collect.CollectListActivity
+import com.yfy.play.base.util.ActivityRouter
 import com.yfy.play.databinding.AdapterProfileBinding
 import com.yfy.play.main.login.LoginActivity
 import com.yfy.play.profile.history.BrowseHistoryActivity
@@ -52,7 +54,8 @@ class ProfileAdapter(
                 if (Play.isLoginResult()) {
                     UserRankActivity.actionStart(mContext)
                 } else {
-                    LoginActivity.actionStart(mContext)
+                    ActivityRouter.showLoginActivity(mContext as Activity)
+//                    LoginActivity.actionStart(mContext)
                 }
             }
             mContext.getString(R.string.my_collection) -> {
