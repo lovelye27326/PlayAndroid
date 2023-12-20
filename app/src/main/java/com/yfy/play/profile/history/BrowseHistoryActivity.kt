@@ -3,7 +3,7 @@ package com.yfy.play.profile.history
 import android.content.Context
 import android.content.Intent
 import androidx.activity.viewModels
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
 import com.yfy.play.base.BaseListActivity
@@ -56,7 +56,7 @@ class BrowseHistoryActivity : BaseListActivity() {
                 if (viewModel.dataList.size <= 0) {
                     showNoContentView(getString(R.string.no_browsing_history))
                 } else {
-                    showToast(getString(R.string.no_more_data))
+                    showShortToast(getString(R.string.no_more_data))
                     loadFinished()
                 }
             }

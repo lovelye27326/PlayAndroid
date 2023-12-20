@@ -4,9 +4,19 @@ import android.content.Context
 import android.widget.Toast
 
 
+fun showToast(msg: String?) {
+    if (msg.isNullOrBlank()) return
+    ToastUtil.showShort(msg)
+}
+
+fun showLongToast(msg: String?) {
+    if (msg.isNullOrBlank()) return
+    ToastUtil.showLong(msg)
+}
+
 private var toast: Toast? = null
 
-fun Context?.showToast(
+fun Context?.showShortToast(
     content: String?
 ) {
     if (Thread.currentThread().name != "main") return
@@ -23,7 +33,7 @@ fun Context?.showToast(
     toast?.show()
 }
 
-fun Context?.showToast(resId: Int) {
+fun Context?.showShortToast(resId: Int) {
     if (this == null) return
     if (toast == null) {
         toast = Toast.makeText(
@@ -38,9 +48,12 @@ fun Context?.showToast(resId: Int) {
 }
 
 fun cancelToast() {
-    if (Thread.currentThread().name != "main") return
-    if (toast != null) {
-        toast?.cancel()
-        toast = null
-    }
+    // 销毁时toast cancel
+    ToastUtil.cancel()
+
+//    if (Thread.currentThread().name != "main") return
+//    if (toast != null) {
+//        toast?.cancel()
+//        toast = null
+//    }
 }

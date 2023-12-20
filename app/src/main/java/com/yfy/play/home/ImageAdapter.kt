@@ -6,7 +6,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.yfy.core.util.checkNetworkAvailable
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.model.room.entity.BannerBean
 import com.yfy.play.R
 import com.yfy.play.article.ArticleActivity
@@ -53,7 +53,7 @@ open class ImageAdapter(private val mContext: Context, mData: List<BannerBean>) 
                 .into(this)
             setOnClickListener {
                 if (!mContext.checkNetworkAvailable()) {
-                    mContext.showToast(mContext.getString(R.string.no_network))
+                    mContext.showShortToast(mContext.getString(R.string.no_network))
                     return@setOnClickListener
                 }
                 ArticleActivity.actionStart(

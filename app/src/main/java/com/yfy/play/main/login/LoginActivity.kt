@@ -2,8 +2,6 @@ package com.yfy.play.main.login
 
 import android.animation.Animator
 import android.animation.ObjectAnimator
-import android.content.Context
-import android.content.Intent
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
@@ -16,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.yfy.core.util.LogUtil
 import com.yfy.core.util.checkNetworkAvailable
+import com.yfy.core.util.showShortToast
 import com.yfy.core.util.showToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
@@ -29,6 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class LoginActivity : BaseActivity(), TextWatcher {
     private var binding by releasableNotNull<ActivityLoginBinding>()
     private val viewModel by viewModels<LoginViewModelHilt>()
+    private var watcher by releasableNotNull<TextWatcher>()
     private var mUserName = ""
     private var mPassWord = ""
     private var mIsLogin = true
@@ -39,6 +39,39 @@ class LoginActivity : BaseActivity(), TextWatcher {
         return binding.root
     }
 
+    /**
+     * EditText 的 setTransformationMethod 方法用于设置输入变换方法。这可以用于控制用户在输入文本时的行为。
+     * 例如，你可以使用这个方法来实现密码输入（在输入时隐藏文本）或者电子邮件地址输入（在输入时自动添加“@”符号等）。
+
+    TransformationMethod 是一个接口，它定义了一个 getTransformation 方法，该方法返回一个 CharSequence，
+    它表示应该显示给用户的文本，而不是原始输入的文本。
+
+    例如，如果你想实现一个密码输入框，你可以使用 PasswordTransformationMethod，这是 TransformationMethod 的一个实现，
+    它将输入的字符显示为圆点。你可以这样设置 EditText 的变换方法：
+
+    java
+    yourEditText.setTransformationMethod(new PasswordTransformationMethod());
+    你也可以创建自己的 TransformationMethod 来实现更复杂的输入变换。例如，如果你想创建一个在用户输入时自动添加特定字符的变换方法，
+    你可以创建一个新的 TransformationMethod 并覆盖 getTransformation 方法，如在字符串后自动添加邮箱@域名后缀
+
+    java
+    public class AutoAddTransformationMethod implements TransformationMethod {
+    private final String mSuffix;
+
+    public AutoAddTransformationMethod(String suffix) {
+    mSuffix = suffix;
+    }
+
+    @Override
+    public CharSequence getTransformation(CharSequence source, View view) {
+    return source + mSuffix;
+    }
+    }
+    然后，你可以这样设置 EditText 的变换方法：
+
+    java
+    yourEditText.setTransformationMethod(new AutoAddTransformationMethod("@example.com"));
+     */
     override fun initView() {
         mTAG = "LoginAct"
         binding.apply {
@@ -55,7 +88,7 @@ class LoginActivity : BaseActivity(), TextWatcher {
                 val transformationMethod = loginPassEdit?.transformationMethod
                 if (transformationMethod is PasswordTransformationMethod) {
                     loginPassEdit!!.transformationMethod =
-                        HideReturnsTransformationMethod.getInstance()
+                        HideReturnsTransformationMethod.getInstance() //重置输入变换方法
                     loginPassVisible.setColorFilter(getColor(R.color.colorLoading))
                 } else {
                     loginPassEdit!!.transformationMethod =
@@ -68,7 +101,7 @@ class LoginActivity : BaseActivity(), TextWatcher {
             }
             loginPassEdit?.addTextChangedListener(this@LoginActivity)
             loginPassEdit?.transformationMethod =
-                PasswordTransformationMethod.getInstance()
+                PasswordTransformationMethod.getInstance() //设置密码输入变换方法
         }
 
 
@@ -160,7 +193,7 @@ class LoginActivity : BaseActivity(), TextWatcher {
             return false
         }
         if (!checkNetworkAvailable()) {
-            showToast(getString(R.string.no_network))
+            showShortToast(getString(R.string.no_network))
             return false
         }
         return true
@@ -182,13 +215,6 @@ class LoginActivity : BaseActivity(), TextWatcher {
     override fun afterTextChanged(s: Editable?) {
         binding.loginPassClear?.isVisible = !s.isNullOrEmpty()
     }
-
-//    companion object {
-//        fun actionStart(context: Context) {
-//            val intent = Intent(context, LoginActivity::class.java)
-//            context.startActivity(intent)
-//        }
-//    }
 
 
     override fun onDestroy() {

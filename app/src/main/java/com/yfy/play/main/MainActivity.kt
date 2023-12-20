@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
 import com.yfy.play.databinding.ActivityMainBinding
@@ -53,7 +53,7 @@ class MainActivity : BaseActivity() {
 
     private fun exit() {
         if (System.currentTimeMillis() - exitTime > 2000) {
-            showToast(getString(R.string.exit_program))
+            showShortToast(getString(R.string.exit_program))
             exitTime = System.currentTimeMillis()
         } else {
             exitProcess(0)

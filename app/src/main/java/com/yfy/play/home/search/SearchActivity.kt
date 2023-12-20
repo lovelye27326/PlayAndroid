@@ -13,7 +13,7 @@ import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.yfy.core.util.hideIme
 import com.yfy.core.util.showIme
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.model.room.PlayDatabase
 import com.yfy.model.room.dao.HotKeyDao
@@ -117,7 +117,7 @@ class SearchActivity : BaseActivity(), View.OnClickListener, TextView.OnEditorAc
     private fun toSearch() {
         val keyword = binding.searchTxtKeyword.text.toString()
         if (TextUtils.isEmpty(keyword)) {
-            showToast(getString(R.string.keyword_not_null))
+            showShortToast(getString(R.string.keyword_not_null))
             return
         }
         val hotKey = HotKey(id = -1, name = keyword)

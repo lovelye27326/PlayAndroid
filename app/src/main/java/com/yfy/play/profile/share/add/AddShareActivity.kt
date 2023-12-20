@@ -7,7 +7,7 @@ import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.yfy.core.Play
 import com.yfy.core.util.isHttpUrl
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
 import com.yfy.play.base.util.ActivityRouter
@@ -47,7 +47,7 @@ class AddShareActivity : BaseActivity(), View.OnClickListener {
         lifecycleScope.launch {
             Play.isLogin().first {
                 if (!it) {
-                    showToast(getString(R.string.not_currently_logged_in))
+                    showShortToast(getString(R.string.not_currently_logged_in))
                     ActivityRouter.showLoginActivity(this@AddShareActivity)
 //                    LoginActivity.actionStart(this@AddShareActivity)
                 }
@@ -70,7 +70,7 @@ class AddShareActivity : BaseActivity(), View.OnClickListener {
         }
         shareRepository.shareArticle(title, link).observe(this) {
             if (it.isSuccess) {
-                showToast(getString(R.string.share_success))
+                showShortToast(getString(R.string.share_success))
                 finish()
             }
         }

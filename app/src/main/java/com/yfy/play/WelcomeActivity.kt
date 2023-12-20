@@ -4,10 +4,9 @@ import android.annotation.SuppressLint
 import android.view.KeyEvent
 import android.view.View
 import android.view.animation.*
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.main.MainActivity
-import com.yfy.play.R
 import com.yfy.play.databinding.ActivityWelcomeBinding
 
 class WelcomeActivity : BaseActivity(),
@@ -100,7 +99,7 @@ class WelcomeActivity : BaseActivity(),
 
     private fun exit() {
         if (System.currentTimeMillis() - exitTime > 2000) {
-            showToast(R.string.exit_program)
+            showShortToast(R.string.exit_program)
             exitTime = System.currentTimeMillis()
         } else {
             finish()

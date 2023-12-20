@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.yfy.core.util.LogUtil
+import com.yfy.core.util.ScreenUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 

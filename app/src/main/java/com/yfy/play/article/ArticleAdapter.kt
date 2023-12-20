@@ -13,7 +13,7 @@ import com.yfy.core.Play
 import com.yfy.core.util.checkNetworkAvailable
 import com.yfy.core.util.getHtmlText
 import com.yfy.core.util.setSafeListener
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseRecyclerAdapter
 import com.yfy.model.room.PlayDatabase
 import com.yfy.model.room.entity.Article
@@ -53,22 +53,22 @@ class ArticleAdapter(
                 if (cancelCollects.errorCode == 0) {
                     withContext(Dispatchers.Main) {
                         articleTvCollect.setImageResource(R.drawable.ic_favorite_border_black_24dp)
-                        mContext.showToast(mContext.getString(R.string.collection_cancelled_successfully))
+                        mContext.showShortToast(mContext.getString(R.string.collection_cancelled_successfully))
                         articleDao.update(t)
                     }
                 } else {
-                    mContext.showToast(mContext.getString(R.string.failed_to_cancel_collection))
+                    mContext.showShortToast(mContext.getString(R.string.failed_to_cancel_collection))
                 }
             } else {
                 val toCollects = collectRepository.toCollects(t.id)
                 if (toCollects.errorCode == 0) {
                     withContext(Dispatchers.Main) {
                         articleTvCollect.setImageResource(R.drawable.ic_favorite_black_24dp)
-                        mContext.showToast(mContext.getString(R.string.collection_successful))
+                        mContext.showShortToast(mContext.getString(R.string.collection_successful))
                         articleDao.update(t)
                     }
                 } else {
-                    mContext.showToast(mContext.getString(R.string.collection_failed))
+                    mContext.showShortToast(mContext.getString(R.string.collection_failed))
                 }
             }
         }
@@ -115,17 +115,17 @@ class ArticleAdapter(
                                 data.collect = !data.collect
                                 setCollect(collectRepository, data, articleIvCollect)
                             } else {
-                                mContext.showToast(mContext.getString(R.string.no_network))
+                                mContext.showShortToast(mContext.getString(R.string.no_network))
                             }
                         } else {
-                            mContext.showToast(mContext.getString(R.string.not_currently_logged_in))
+                            mContext.showShortToast(mContext.getString(R.string.not_currently_logged_in))
                         }
                     }
                 }
             }
             articleLlItem.setOnClickListener {
                 if (!mContext.checkNetworkAvailable()) {
-                    mContext.showToast(mContext.getString(R.string.no_network))
+                    mContext.showShortToast(mContext.getString(R.string.no_network))
                     return@setOnClickListener
                 }
                 ArticleActivity.actionStart(mContext, data)

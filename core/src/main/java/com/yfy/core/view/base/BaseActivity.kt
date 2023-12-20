@@ -13,7 +13,7 @@ import com.scwang.smart.refresh.layout.util.SmartUtil.dp2px
 import com.yfy.core.R
 import com.yfy.core.util.LogUtil
 import com.yfy.core.util.cancelToast
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.util.transparentStatusBar
 import com.yfy.core.view.base.lce.DefaultLceImpl
 import com.yfy.core.view.base.lce.ILce
@@ -125,7 +125,7 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
                     showLoadErrorView()
                 }
             } else {
-                showToast(getString(R.string.bad_network_view_tip))
+                showShortToast(getString(R.string.bad_network_view_tip))
                 showBadNetworkView { initData() }
             }
         }

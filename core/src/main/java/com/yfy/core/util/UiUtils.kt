@@ -5,7 +5,6 @@ import android.view.View
 
 /**
  * dip转换成pixel
- * @param context
  * @param dpValue
  * @return
  */

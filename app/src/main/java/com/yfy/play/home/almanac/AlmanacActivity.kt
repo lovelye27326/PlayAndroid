@@ -8,7 +8,7 @@ import androidx.activity.viewModels
 import com.yfy.core.almanac.ProgrammerCalendar
 import com.yfy.core.util.IntentShareUtils
 import com.yfy.core.util.ProgressDialogUtil
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
 import com.yfy.play.databinding.ActivityAlmanacBinding
@@ -52,7 +52,7 @@ class AlmanacActivity : BaseActivity() {
                 }
                 ShareError -> {
                     hideProgressDialog()
-                    showToast("分享失败")
+                    showShortToast("分享失败")
                 }
             }
         }

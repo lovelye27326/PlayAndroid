@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yfy.core.Play
 import com.yfy.core.util.LogUtil
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.model.model.Login
 import com.yfy.play.R
 import com.yfy.play.article.ArticleBroadCast
@@ -213,7 +213,7 @@ class LoginViewModelHilt @Inject constructor(
         Play.setLogin(true)
         Play.setUserInfo(it.nickname, it.username)
         ArticleBroadCast.sendArticleChangesReceiver(context = application)
-        application.applicationContext.showToast(
+        application.applicationContext.showShortToast(
             if (isLogin) application.getString(R.string.login_success) else application.getString(
                 R.string.register_success
             )

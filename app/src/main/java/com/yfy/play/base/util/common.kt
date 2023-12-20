@@ -19,6 +19,7 @@ import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.yfy.core.Play
+import com.yfy.core.util.StringUtil
 import com.yfy.play.main.login.bean.BaseBean
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose

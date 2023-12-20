@@ -2,6 +2,9 @@ package com.yfy.play.base
 
 import android.content.res.Configuration
 import android.view.View
+import com.yfy.play.base.util.isInitialed
+import com.yfy.play.base.util.releasableNotNull
+import com.yfy.play.base.util.release
 import com.yfy.play.databinding.ActivityBaseListBinding
 import com.yfy.play.home.ArticleCollectBaseActivity
 
@@ -11,8 +14,7 @@ import com.yfy.play.home.ArticleCollectBaseActivity
  *
  */
 abstract class BaseListActivity : ArticleCollectBaseActivity() {
-
-    protected lateinit var binding: ActivityBaseListBinding
+    protected var binding by releasableNotNull<ActivityBaseListBinding>()
     protected var page = 1
 
     override fun getLayoutView(): View {
@@ -39,4 +41,10 @@ abstract class BaseListActivity : ArticleCollectBaseActivity() {
 
     abstract fun isStaggeredGrid(): Boolean
 
+    override fun onDestroy() {
+        if (::binding.isInitialed()) {
+            ::binding.release()
+        }
+        super.onDestroy()
+    }
 }

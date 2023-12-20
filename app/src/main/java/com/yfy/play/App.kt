@@ -6,6 +6,7 @@ import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.tencent.bugly.crashreport.CrashReport
 import com.yfy.core.Play
+import com.yfy.core.util.Util
 import com.yfy.play.base.util.*
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +25,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Play.initialize(applicationContext)
+        Play.initialize(this)
+        Util.init(this)
         initData()
     }
 

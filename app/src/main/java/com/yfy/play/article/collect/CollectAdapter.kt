@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.yfy.core.util.checkNetworkAvailable
 import com.yfy.core.util.getHtmlText
 import com.yfy.core.util.setSafeListener
-import com.yfy.core.util.showToast
+import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseRecyclerAdapter
 import com.yfy.model.model.CollectX
 import com.yfy.play.article.ArticleActivity
@@ -44,11 +44,11 @@ class CollectAdapter(
             val cancelCollects = collectRepository.cancelCollects(id)
             withContext(Dispatchers.Main) {
                 if (cancelCollects.errorCode == 0) {
-                    mContext.showToast(mContext.getString(R.string.collection_cancelled_successfully))
+                    mContext.showShortToast(mContext.getString(R.string.collection_cancelled_successfully))
                     articleList.removeAt(position)
                     notifyItemChanged(position)
                 } else {
-                    mContext.showToast(mContext.getString(R.string.failed_to_cancel_collection))
+                    mContext.showShortToast(mContext.getString(R.string.failed_to_cancel_collection))
                 }
             }
         }
@@ -76,7 +76,7 @@ class CollectAdapter(
             }
             articleLlItem.setOnClickListener {
                 if (!mContext.checkNetworkAvailable()) {
-                    mContext.showToast(mContext.getString(R.string.no_network))
+                    mContext.showShortToast(mContext.getString(R.string.no_network))
                     return@setOnClickListener
                 }
                 ArticleActivity.actionStart(mContext, data)

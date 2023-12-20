@@ -12,7 +12,7 @@ object ActivityCollector {
 
     private const val TAG = "ActivityCollector"
 
-    private val activityList = ArrayList<WeakReference<Activity>?>()
+    val activityList = ArrayList<WeakReference<Activity>?>()
 
     fun size(): Int {
         return activityList.size

@@ -1,27 +1,40 @@
-package com.yfy.play.base.util;
+package com.yfy.core.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.Pair;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 
+import com.airbnb.lottie.utils.Utils;
 import com.yfy.core.Play;
 import com.yfy.core.util.LogUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 //import io.reactivex.exceptions.UndeliverableException;
@@ -195,7 +208,7 @@ public class ScreenUtils {
     }
   }
 
-  private final static String TAG = "PlayApp";
+  private final static String TAG = "ScreenUtils";
 
 //  public static void setRxException() {
 //    RxJavaPlugins.setErrorHandler(e -> {
@@ -288,9 +301,9 @@ public class ScreenUtils {
 
       if (sProviderInstance != null) {
         field.set("sProviderInstance", sProviderInstance);
-        LogUtil.i("hookWebView", "Hook success!");
+        LogUtil.i(TAG, "Hook success!");
       } else {
-        LogUtil.i("hookWebView", "Hook failed!");
+        LogUtil.i(TAG, "Hook failed!");
       }
     } catch (Throwable e) {
       LogUtil.e("hookWebView", e.getMessage());
@@ -305,5 +318,70 @@ public class ScreenUtils {
       return;
     }
     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+  }
+
+  public static boolean isLayoutRtl() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      Locale primaryLocale;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        primaryLocale = Objects.requireNonNull(Play.INSTANCE.getContext()).getResources().getConfiguration().getLocales().get(0);
+      } else {
+        primaryLocale = Objects.requireNonNull(Play.INSTANCE.getContext()).getResources().getConfiguration().locale;
+      }
+      return TextUtils.getLayoutDirectionFromLocale(primaryLocale) == View.LAYOUT_DIRECTION_RTL;
+    }
+    return false;
+  }
+
+  public static View layoutId2View(@LayoutRes final int layoutId) {
+    LayoutInflater inflate =
+            (LayoutInflater) Objects.requireNonNull(Play.INSTANCE.getContext()).getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    return inflate.inflate(layoutId, null);
+  }
+
+
+  @SuppressLint("DefaultLocale")
+  public static String byte2FitMemorySize(final long byteSize) {
+    return byte2FitMemorySize(byteSize, 3);
+  }
+
+  public static final int BYTE = 1;
+  public static final int KB   = 1024;
+  public static final int MB   = 1048576;
+  public static final int GB   = 1073741824;
+
+  @SuppressLint("DefaultLocale")
+  private static String byte2FitMemorySize(final long byteSize, int precision) {
+    if (precision < 0) {
+      throw new IllegalArgumentException("precision shouldn't be less than zero!");
+    }
+    if (byteSize < 0) {
+      throw new IllegalArgumentException("byteSize shouldn't be less than zero!");
+    } else if (byteSize < KB) {
+      return String.format("%." + precision + "fB", (double) byteSize);
+    } else if (byteSize < MB) {
+      return String.format("%." + precision + "fKB", (double) byteSize / KB);
+    } else if (byteSize < GB) {
+      return String.format("%." + precision + "fMB", (double) byteSize / MB);
+    } else {
+      return String.format("%." + precision + "fGB", (double) byteSize / GB);
+    }
+  }
+
+  public static boolean isGranted(final String permission) {
+    return Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+            || PackageManager.PERMISSION_GRANTED
+            == ContextCompat.checkSelfPermission(Objects.requireNonNull(Play.INSTANCE.getContext()), permission);
+  }
+
+
+//  @RequiresApi(api = Build.VERSION_CODES.M)
+  public static boolean isGrantedDrawOverlays() {
+    return Settings.canDrawOverlays(Play.INSTANCE.getContext());
+  }
+
+  public static boolean isActivityAlive(final Activity activity) {
+    return activity != null && !activity.isFinishing()
+            && (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 || !activity.isDestroyed());
   }
 }

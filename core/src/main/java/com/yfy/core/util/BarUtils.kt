@@ -1,7 +1,9 @@
 package com.yfy.core.util
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -9,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat.Type.ime
 import androidx.fragment.app.Fragment
+import com.yfy.core.Play
 
 
 /**
@@ -28,6 +31,31 @@ fun Context?.getStatusBarHeight(): Int {
     return result
 }
 
+
+///////////////////////////////////////////////////////////////////////////
+// navigation bar
+///////////////////////////////////////////////////////////////////////////
+@SuppressLint("DiscouragedApi")
+fun getNavBarHeight(): Int {
+    val res: Resources? = Play.context?.resources
+    val resourceId = res?.getIdentifier("navigation_bar_height", "dimen", "android") ?: 0
+    return if (resourceId != 0) {
+        res?.getDimensionPixelSize(resourceId) ?: 0
+    } else {
+        0
+    }
+}
+
+@SuppressLint("DiscouragedApi")
+fun getStatusBarHeight(): Int {
+    val resources: Resources? = Play.context?.resources
+    val resourceId = resources?.getIdentifier("status_bar_height", "dimen", "android")?:0
+    return if (resourceId != 0) {
+         resources?.getDimensionPixelSize(resourceId)?:0
+    } else {
+        0
+    }
+}
 
 /**
  * 状态栏反色
