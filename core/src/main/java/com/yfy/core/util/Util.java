@@ -36,14 +36,14 @@ public class Util {
             LogUtil.e("Utils", "app is null.");
             return;
         }
-        Application sApp = (Application) Play.INSTANCE.getContext();
-        if (sApp == null) {
-            sApp = app;
-            Play.INSTANCE.initialize(sApp);
-            UtilsActivityLifecycleImpl.INSTANCE.init(sApp);
+        Context ctx  = Play.INSTANCE.getContext();
+        if (ctx == null) {
+            Play.INSTANCE.initialize(app);
+            UtilsActivityLifecycleImpl.INSTANCE.init(app);
 //            preLoad();
             return;
         }
+        Application sApp = (Application) ctx;
         if (sApp.equals(app)) {
             UtilsActivityLifecycleImpl.INSTANCE.init(sApp);
             return;
