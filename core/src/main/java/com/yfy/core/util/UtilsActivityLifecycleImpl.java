@@ -14,7 +14,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 
+import com.yfy.core.view.base.ActivityCollector;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,7 +48,7 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
 
     static final UtilsActivityLifecycleImpl INSTANCE = new UtilsActivityLifecycleImpl();
 
-    private final LinkedList<Activity> mActivityList = new LinkedList<>();
+//    private final LinkedList<Activity> mActivityList = new LinkedList<>();
 
     private final List<Util.OnAppStatusChangedListener> mStatusListeners = new CopyOnWriteArrayList<>();
     private final Map<Activity, List<Util.ActivityLifecycleCallbacks>> mActivityLifecycleCallbacksMap = new ConcurrentHashMap<>();
@@ -62,28 +64,22 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
     }
 
     void unInit(Application app) {
-        mActivityList.clear();
+        ActivityCollector.INSTANCE.getActivityList().clear();
         app.unregisterActivityLifecycleCallbacks(this);
     }
 
     Activity getTopActivity() {
-        List<Activity> activityList = getActivityList();
-        for (Activity activity : activityList) {
-            if (!ScreenUtils.isActivityAlive(activity)) {
-                continue;
+        if (ActivityCollector.INSTANCE.size() == 0) return null;
+        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
+            if (activityWeakReference.get() != null) {
+                Activity activity = activityWeakReference.get();
+                if (!ScreenUtils.isActivityAlive(activity)) {
+                    continue;
+                }
+                return activity;
             }
-            return activity;
         }
         return null;
-    }
-
-    List<Activity> getActivityList() {
-        if (!mActivityList.isEmpty()) {
-            return new LinkedList<>(mActivityList);
-        }
-        List<Activity> reflectActivities = getActivitiesByReflect();
-        mActivityList.addAll(reflectActivities);
-        return new LinkedList<>(mActivityList);
     }
 
     void addOnAppStatusChangedListener(final Util.OnAppStatusChangedListener listener) {
@@ -148,7 +144,8 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
 //        consumeLifecycle(activity, event, mActivityLifecycleCallbacksMap.get(STUB));
     }
 
-    private void consumeLifecycle(Activity activity, Lifecycle.Event event, List<Util.ActivityLifecycleCallbacks> listeners) {
+    private void consumeLifecycle(Activity activity, Lifecycle.Event
+            event, List<Util.ActivityLifecycleCallbacks> listeners) {
         if (listeners == null) return;
         for (Util.ActivityLifecycleCallbacks listener : listeners) {
             listener.onLifecycleChanged(activity, event);
@@ -188,22 +185,29 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
     ///////////////////////////////////////////////////////////////////////////
     // lifecycle start
     ///////////////////////////////////////////////////////////////////////////
+
+    private WeakReference<Activity> weakRefActivity;
+
     @Override
-    public void onActivityPreCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {/**/}
+    public void onActivityPreCreated(@NonNull Activity activity, @Nullable Bundle
+            savedInstanceState) {/**/}
 
     @Override
     public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
-        if (mActivityList.size() == 0) {
+        if (ActivityCollector.INSTANCE.size() == 0) { //除当前页外，其他页Activity已结束的情况
             postStatus(activity, true);
         }
 //        LanguageUtils.applyLanguage(activity);
+        weakRefActivity = new WeakReference<>(activity);
+        ActivityCollector.INSTANCE.add(weakRefActivity);
         setAnimatorsEnabled();
         setTopActivity(activity);
         consumeActivityLifecycleCallbacks(activity, Lifecycle.Event.ON_CREATE);
     }
 
     @Override
-    public void onActivityPostCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {/**/}
+    public void onActivityPostCreated(@NonNull Activity activity, @Nullable Bundle
+            savedInstanceState) {/**/}
 
     @Override
     public void onActivityPreStarted(@NonNull Activity activity) {/**/}
@@ -274,20 +278,24 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
     public void onActivityPostStopped(@NonNull Activity activity) {/**/}
 
     @Override
-    public void onActivityPreSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {/**/}
+    public void onActivityPreSaveInstanceState(@NonNull Activity activity, @NonNull Bundle
+            outState) {/**/}
 
     @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {/**/}
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle
+            outState) {/**/}
 
     @Override
-    public void onActivityPostSaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {/**/}
+    public void onActivityPostSaveInstanceState(@NonNull Activity activity, @NonNull Bundle
+            outState) {/**/}
 
     @Override
     public void onActivityPreDestroyed(@NonNull Activity activity) {/**/}
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-        mActivityList.remove(activity);
+        if (weakRefActivity != null)
+            ActivityCollector.INSTANCE.remove(weakRefActivity);
 //        UtilsBridge.fixSoftInputLeaks(activity);
         consumeActivityLifecycleCallbacks(activity, Lifecycle.Event.ON_DESTROY);
     }
@@ -340,59 +348,32 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
     }
 
     private void setTopActivity(final Activity activity) {
-        if (mActivityList.contains(activity)) {
-            if (!mActivityList.getFirst().equals(activity)) {
-                mActivityList.remove(activity);
-                mActivityList.addFirst(activity);
-            }
-        } else {
-            mActivityList.addFirst(activity);
-        }
-    }
-
-    /**
-     * @return the activities which topActivity is first position
-     */
-    private List<Activity> getActivitiesByReflect() {
-        LinkedList<Activity> list = new LinkedList<>();
-        Activity topActivity = null;
-        try {
-            Object activityThread = getActivityThread();
-            if (activityThread == null) return list;
-            Field mActivitiesField = activityThread.getClass().getDeclaredField("mActivities");
-            mActivitiesField.setAccessible(true);
-            Object mActivities = mActivitiesField.get(activityThread);
-            if (!(mActivities instanceof Map)) {
-                return list;
-            }
-            Map<Object, Object> binder_activityClientRecord_map = (Map<Object, Object>) mActivities;
-            for (Object activityRecord : binder_activityClientRecord_map.values()) {
-                Class activityClientRecordClass = activityRecord.getClass();
-                Field activityField = activityClientRecordClass.getDeclaredField("activity");
-                activityField.setAccessible(true);
-                Activity activity = (Activity) activityField.get(activityRecord);
-                if (topActivity == null) {
-                    Field pausedField = activityClientRecordClass.getDeclaredField("paused");
-                    pausedField.setAccessible(true);
-                    if (!pausedField.getBoolean(activityRecord)) {
-                        topActivity = activity;
-                    } else {
-                        list.addFirst(activity);
-                    }
-                } else {
-                    list.addFirst(activity);
+        LinkedList<WeakReference<Activity>> activityList = ActivityCollector.INSTANCE.getActivityList();
+        if (activityList.size() <= 1) return;
+        boolean containActivity = false;
+        WeakReference<Activity> activityWeakRef = null;
+        for (final WeakReference<Activity> activityWeakReference : activityList) {
+            if (activityWeakReference.get() != null) {
+                Activity activityGet = activityWeakReference.get();
+                containActivity = activity.equals(activityGet);
+                if (containActivity) {
+                    activityWeakRef = activityWeakReference;
                 }
             }
-        } catch (Exception e) {
-            Log.e("UtilsActivityLifecycle", "getActivitiesByReflect: " + e.getMessage());
         }
-        if (topActivity != null) {
-            list.addFirst(topActivity);
+        if (containActivity) {
+            if (!activityList.getFirst().get().equals(activity)) {
+                activityList.remove(activityWeakRef);
+                WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
+                activityList.addFirst(weakRefActivity);
+            }
+        } else {
+            WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
+            activityList.addFirst(weakRefActivity);
         }
-        return list;
     }
 
-    private Object getActivityThread() {
+    public Object getActivityThread() {
         Object activityThread = getActivityThreadInActivityThreadStaticField();
         if (activityThread != null) return activityThread;
         return getActivityThreadInActivityThreadStaticMethod();

@@ -33,8 +33,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 //import io.reactivex.exceptions.UndeliverableException;
@@ -384,4 +386,49 @@ public class ScreenUtils {
     return activity != null && !activity.isFinishing()
             && (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 || !activity.isDestroyed());
   }
+
+
+
+  /**
+   * @return the activities which topActivity is first position
+   */
+  private List<Activity> getActivitiesByReflect() {
+    LinkedList<Activity> list = new LinkedList<>();
+    Activity topActivity = null;
+    try {
+      Object activityThread = UtilsActivityLifecycleImpl.INSTANCE.getActivityThread();
+      if (activityThread == null) return list;
+      Field mActivitiesField = activityThread.getClass().getDeclaredField("mActivities");
+      mActivitiesField.setAccessible(true);
+      Object mActivities = mActivitiesField.get(activityThread);
+      if (!(mActivities instanceof Map)) {
+        return list;
+      }
+      Map<Object, Object> binder_activityClientRecord_map = (Map<Object, Object>) mActivities;
+      for (Object activityRecord : binder_activityClientRecord_map.values()) {
+        Class activityClientRecordClass = activityRecord.getClass();
+        Field activityField = activityClientRecordClass.getDeclaredField("activity");
+        activityField.setAccessible(true);
+        Activity activity = (Activity) activityField.get(activityRecord);
+        if (topActivity == null) {
+          Field pausedField = activityClientRecordClass.getDeclaredField("paused");
+          pausedField.setAccessible(true);
+          if (!pausedField.getBoolean(activityRecord)) {
+            topActivity = activity;
+          } else {
+            list.addFirst(activity);
+          }
+        } else {
+          list.addFirst(activity);
+        }
+      }
+    } catch (Exception e) {
+      Log.e("UtilsActivityLifecycle", "getActivitiesByReflect: " + e.getMessage());
+    }
+    if (topActivity != null) {
+      list.addFirst(topActivity);
+    }
+    return list;
+  }
+
 }

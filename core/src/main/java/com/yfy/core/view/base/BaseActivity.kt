@@ -49,15 +49,15 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
 
     private var defaultLce: ILce? = null
 
-    private var weakRefActivity: WeakReference<Activity>? = null
+//    private var weakRefActivity: WeakReference<Activity>? = null
     protected var mTAG = this.javaClass.simpleName.toString()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         transparentStatusBar()
         setContentView(getLayoutView())
-        weakRefActivity = WeakReference(this)
-        ActivityCollector.add(weakRefActivity)
+//        weakRefActivity = WeakReference(this)
+//        ActivityCollector.add(weakRefActivity)
         initView()
         initData()
     }
@@ -179,6 +179,6 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
         super.onDestroy()
         // 销毁时toast cancel
         cancelToast()
-        ActivityCollector.remove(weakRefActivity)
+//        ActivityCollector.remove(weakRefActivity)
     }
 }

@@ -3,6 +3,7 @@ package com.yfy.core.view.base
 import android.app.Activity
 import com.yfy.core.util.LogUtil
 import java.lang.ref.WeakReference
+import java.util.*
 
 /**
  * 应用中所有Activity的管理器，可用于一键杀死所有Activity。
@@ -12,7 +13,7 @@ object ActivityCollector {
 
     private const val TAG = "ActivityCollector"
 
-    val activityList = ArrayList<WeakReference<Activity>?>()
+    val activityList = LinkedList<WeakReference<Activity>?>()
 
     fun size(): Int {
         return activityList.size
