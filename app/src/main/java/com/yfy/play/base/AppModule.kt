@@ -2,7 +2,7 @@ package com.yfy.play.base
 
 import com.yfy.network.base.ServiceCreator
 import com.yfy.network.service.LoginService
-import com.yfy.network.util.GsonUtils
+import com.yfy.core.util.GsonUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

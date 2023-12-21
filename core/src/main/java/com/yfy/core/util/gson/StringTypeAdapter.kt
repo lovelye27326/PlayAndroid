@@ -1,6 +1,5 @@
-package com.yfy.network.util.gson
+package com.yfy.core.util.gson
 
-import com.yfy.network.util.GsonUtil
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement

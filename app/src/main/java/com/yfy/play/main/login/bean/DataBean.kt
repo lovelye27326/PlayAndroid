@@ -1,9 +1,7 @@
 package com.yfy.play.main.login.bean
 
-import android.text.TextUtils
+import com.yfy.core.util.bean.BaseBean
 import com.yfy.model.model.Login
-import com.yfy.network.util.GsonUtils
-import java.io.Serializable
 
 /**
  * 登录
@@ -28,8 +26,3 @@ sealed class LoginState {
 }
 
 
-open class BaseBean : Serializable { //
-    fun toJson(): String {
-        return GsonUtils.toJson(this)
-    }
-}

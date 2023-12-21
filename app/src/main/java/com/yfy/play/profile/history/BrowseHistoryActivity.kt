@@ -18,7 +18,6 @@ class BrowseHistoryActivity : BaseListActivity() {
     override fun initView() {
         super.initView()
         articleAdapter = ArticleAdapter(
-            this,
             viewModel.dataList,
             false
         )

@@ -37,7 +37,6 @@ class ArticleListActivity : BaseListActivity() {
     override fun initView() {
         super.initView()
         articleAdapter = ArticleAdapter(
-            this,
             viewModel.dataList
         )
         binding.baseListToTop.setAdapter(articleAdapter)

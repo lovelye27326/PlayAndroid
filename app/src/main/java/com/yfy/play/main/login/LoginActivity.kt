@@ -12,10 +12,7 @@ import android.view.animation.OvershootInterpolator
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.yfy.core.util.LogUtil
-import com.yfy.core.util.checkNetworkAvailable
-import com.yfy.core.util.showShortToast
-import com.yfy.core.util.showToast
+import com.yfy.core.util.*
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
 import com.yfy.play.base.util.*

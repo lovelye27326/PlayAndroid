@@ -8,12 +8,12 @@ import androidx.lifecycle.lifecycleScope
 import com.yfy.core.Play
 import com.yfy.model.model.CoinInfo
 import com.yfy.model.model.ShareModel
+import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
+import com.yfy.play.databinding.ActivityShareBinding
 import com.yfy.play.home.ArticleCollectBaseActivity
 import com.yfy.play.profile.rank.user.UserRankActivity
 import com.yfy.play.profile.share.add.AddShareActivity
-import com.yfy.play.R
-import com.yfy.play.databinding.ActivityShareBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -87,7 +87,6 @@ class ShareActivity : ArticleCollectBaseActivity(), View.OnClickListener {
         binding.shareTvRank.setOnClickListener(this)
         binding.shareToTopRecyclerView.setRecyclerViewLayoutManager(true)
         articleAdapter = ArticleAdapter(
-            this,
             viewModel.articleList
         )
         binding.shareToTopRecyclerView.setAdapter(articleAdapter)

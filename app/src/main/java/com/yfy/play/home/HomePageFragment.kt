@@ -82,13 +82,13 @@ class HomePageFragment : ArticleCollectBaseFragment() {
 //            homeBanner2.setIndicator(CircleIndicator(context)).start()
 //            homeBanner2.setBannerRound(20f)
             homeToTopRecyclerView.setRecyclerViewLayoutManager(true)
-            articleAdapter = ArticleAdapter(requireContext(), viewModel.articleList)
+            articleAdapter = ArticleAdapter(viewModel.articleList, true, this@HomePageFragment)
             homeToTopRecyclerView.onRefreshListener({
                 page = 1
                 getArticleList(true)
             }, {
                 page++
-                getArticleList(true)
+                getArticleList(false)
             })
             homeToTopRecyclerView.setAdapter(articleAdapter)
         }

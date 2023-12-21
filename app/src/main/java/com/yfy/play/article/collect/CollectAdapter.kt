@@ -10,11 +10,11 @@ import com.bumptech.glide.Glide
 import com.yfy.core.util.checkNetworkAvailable
 import com.yfy.core.util.getHtmlText
 import com.yfy.core.util.setSafeListener
-import com.yfy.core.util.showShortToast
+import com.yfy.core.util.showToast
 import com.yfy.core.view.base.BaseRecyclerAdapter
 import com.yfy.model.model.CollectX
-import com.yfy.play.article.ArticleActivity
 import com.yfy.play.R
+import com.yfy.play.article.ArticleActivity
 import com.yfy.play.databinding.AdapterArticleBinding
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
@@ -44,11 +44,15 @@ class CollectAdapter(
             val cancelCollects = collectRepository.cancelCollects(id)
             withContext(Dispatchers.Main) {
                 if (cancelCollects.errorCode == 0) {
-                    mContext.showShortToast(mContext.getString(R.string.collection_cancelled_successfully))
-                    articleList.removeAt(position)
-                    notifyItemChanged(position)
+                    showToast(mContext.getString(R.string.collection_cancelled_successfully))
+                    val size = articleList.size
+                    if (position in 0 until size) {
+                        articleList.removeAt(position)
+                        notifyItemRemoved(position)
+                        notifyItemRangeChanged(position, size - position)
+                    }
                 } else {
-                    mContext.showShortToast(mContext.getString(R.string.failed_to_cancel_collection))
+                    showToast(mContext.getString(R.string.failed_to_cancel_collection))
                 }
             }
         }
@@ -76,7 +80,7 @@ class CollectAdapter(
             }
             articleLlItem.setOnClickListener {
                 if (!mContext.checkNetworkAvailable()) {
-                    mContext.showShortToast(mContext.getString(R.string.no_network))
+                    showToast(mContext.getString(R.string.no_network))
                     return@setOnClickListener
                 }
                 ArticleActivity.actionStart(mContext, data)

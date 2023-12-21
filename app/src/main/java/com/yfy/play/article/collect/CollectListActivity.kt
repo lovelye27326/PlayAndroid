@@ -1,5 +1,6 @@
 package com.yfy.play.article.collect
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.activity.viewModels
@@ -15,15 +16,20 @@ class CollectListActivity : BaseListActivity() {
 
     private lateinit var articleAdapter: CollectAdapter
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun initData() {
         super.initData()
         binding.baseListTitleBar.setTitle(getString(R.string.my_collection))
         setDataStatus(viewModel.dataLiveData) {
             if (page == 1 && viewModel.dataList.size > 0) {
                 viewModel.dataList.clear()
+                viewModel.dataList.addAll(it.datas)
+                articleAdapter.notifyDataSetChanged()
+            } else {
+                val oldSize = viewModel.dataList.size
+                viewModel.dataList.addAll(it.datas)
+                articleAdapter.notifyItemRangeChanged(oldSize, it.datas.size)
             }
-            viewModel.dataList.addAll(it.datas)
-            articleAdapter.notifyItemInserted(it.datas.size)
         }
     }
 

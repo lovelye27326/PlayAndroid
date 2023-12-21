@@ -82,6 +82,7 @@ public class Util {
 //        UtilsActivityLifecycleImpl.INSTANCE.removeActivityLifecycleCallbacks(callbacks);
 //    }
 
+
     public static Application getApp() {
         Context sApp = Play.INSTANCE.getContext();
         if (sApp != null) return (Application) sApp;

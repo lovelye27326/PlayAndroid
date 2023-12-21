@@ -1,8 +1,9 @@
-package com.yfy.play.base.util
+package com.yfy.core.util
 
 //import android.content.pm.PackageManager
 import android.app.Activity
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -19,8 +20,7 @@ import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.yfy.core.Play
-import com.yfy.core.util.StringUtil
-import com.yfy.play.main.login.bean.BaseBean
+import com.yfy.core.util.bean.BaseBean
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
@@ -49,6 +49,12 @@ import kotlin.reflect.jvm.isAccessible
 
 //跳转
 inline fun <reified T : Activity> Activity.startActivity() {
+    val intent = Intent(this, T::class.java)
+    startActivity(intent)
+}
+
+//跳转
+inline fun <reified T : Context> Context.startActivity() {
     val intent = Intent(this, T::class.java)
     startActivity(intent)
 }

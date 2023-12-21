@@ -1,4 +1,4 @@
-package com.yfy.network.util;
+package com.yfy.core.util;
 
 import androidx.annotation.Nullable;
 
@@ -6,11 +6,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.yfy.network.util.gson.DoubleTypeAdapter;
-import com.yfy.network.util.gson.IntegerTypeAdapter;
-import com.yfy.network.util.gson.ListTypeAdapter;
-import com.yfy.network.util.gson.LongTypeAdapter;
-import com.yfy.network.util.gson.StringTypeAdapter;
+import com.yfy.core.util.gson.DoubleTypeAdapter;
+import com.yfy.core.util.gson.IntegerTypeAdapter;
+import com.yfy.core.util.gson.ListTypeAdapter;
+import com.yfy.core.util.gson.LongTypeAdapter;
+import com.yfy.core.util.gson.StringTypeAdapter;
 
 import java.lang.reflect.Type;
 import java.util.List;

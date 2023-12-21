@@ -1,4 +1,4 @@
-package com.yfy.network.util.gson;
+package com.yfy.core.util.gson;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;

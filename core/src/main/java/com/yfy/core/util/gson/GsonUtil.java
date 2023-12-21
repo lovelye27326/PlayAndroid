@@ -1,4 +1,4 @@
-package com.yfy.network.util;
+package com.yfy.core.util.gson;
 
 import com.google.gson.Gson;
 

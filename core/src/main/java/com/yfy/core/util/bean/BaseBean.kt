@@ -1,13 +1,11 @@
-package com.yfy.play.base.util
+package com.yfy.core.util.bean
 
-import android.app.Activity
-import android.content.Context
-import com.yfy.core.util.startActivity
-import com.yfy.play.main.login.LoginActivity
+import com.yfy.core.util.GsonUtils
+import java.io.Serializable
 
 /**
- * 路由
- * 日期： 2023年12月19日 16:58
+ * 基类
+ * 日期： 2023年12月21日 14:15
  * 签名： 天行健，君子以自强不息；地势坤，君子以厚德载物。
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
@@ -18,19 +16,8 @@ import com.yfy.play.main.login.LoginActivity
  * You never know what you can do until you try !
  * ----------------------------------------------------------------
  */
-
-object ActivityRouter {
-    /**
-     * 进入登录页
-     *
-     * @param mActivity from
-     */
-    fun showLoginActivity(mActivity: Activity) {
-        mActivity.startActivity<LoginActivity>()
-    }
-
-    fun showLoginActivity(ctx: Context) {
-        ctx.startActivity<LoginActivity>()
+open class BaseBean : Serializable { //
+    fun toJson(): String {
+        return GsonUtils.toJson(this)
     }
 }
- 
