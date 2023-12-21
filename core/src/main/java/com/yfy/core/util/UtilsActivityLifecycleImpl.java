@@ -186,7 +186,6 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
     // lifecycle start
     ///////////////////////////////////////////////////////////////////////////
 
-    private WeakReference<Activity> weakRefActivity;
 
     @Override
     public void onActivityPreCreated(@NonNull Activity activity, @Nullable Bundle
@@ -198,7 +197,7 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
             postStatus(activity, true);
         }
 //        LanguageUtils.applyLanguage(activity);
-        weakRefActivity = new WeakReference<>(activity);
+        WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
         ActivityCollector.INSTANCE.add(weakRefActivity);
         setAnimatorsEnabled();
         setTopActivity(activity);
@@ -294,6 +293,18 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
+        boolean containActivity;
+        WeakReference<Activity> weakRefActivity = null;
+        LinkedList<WeakReference<Activity>> activityList = ActivityCollector.INSTANCE.getActivityList();
+        for (final WeakReference<Activity> activityWeakReference : activityList) {
+            if (activityWeakReference.get() != null) {
+                Activity activityGet = activityWeakReference.get();
+                containActivity = activity.equals(activityGet);
+                if (containActivity) {
+                    weakRefActivity = activityWeakReference;
+                }
+            }
+        }
         if (weakRefActivity != null)
             ActivityCollector.INSTANCE.remove(weakRefActivity);
 //        UtilsBridge.fixSoftInputLeaks(activity);
