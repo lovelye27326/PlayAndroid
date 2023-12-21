@@ -60,6 +60,7 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
     private boolean mIsBackground = false;
 
     void init(Application app) {
+        LogUtil.i("UtilsActivityLifecycleImpl", "app init.");
         app.registerActivityLifecycleCallbacks(this);
     }
 

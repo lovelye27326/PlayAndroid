@@ -25,7 +25,7 @@ object ActivityCollector {
 
     fun remove(weakRefActivity: WeakReference<Activity>?) {
         val result = activityList.remove(weakRefActivity)
-        LogUtil.d(TAG, "remove activity reference $result")
+        LogUtil.i(TAG, "remove activity reference $result") //remove activity过滤
     }
 
     fun finishAll() {

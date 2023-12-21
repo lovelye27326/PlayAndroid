@@ -33,17 +33,21 @@ public class Util {
 
     public static void init(final Application app) {
         if (app == null) {
-            Log.e("Utils", "app is null.");
+            LogUtil.e("Utils", "app is null.");
             return;
         }
         Application sApp = (Application) Play.INSTANCE.getContext();
         if (sApp == null) {
             sApp = app;
+            Play.INSTANCE.initialize(sApp);
             UtilsActivityLifecycleImpl.INSTANCE.init(sApp);
 //            preLoad();
             return;
         }
-        if (sApp.equals(app)) return;
+        if (sApp.equals(app)) {
+            UtilsActivityLifecycleImpl.INSTANCE.init(sApp);
+            return;
+        }
         UtilsActivityLifecycleImpl.INSTANCE.unInit(sApp); //新旧application对象不同，卸载再重新初始化
         sApp = app;
         UtilsActivityLifecycleImpl.INSTANCE.init(sApp);
