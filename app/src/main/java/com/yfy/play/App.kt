@@ -26,6 +26,7 @@ class App : Application() {
         super.onCreate()
         Play.initialize(this)
         Util.init(this)
+        initGcWatcher()
         initData()
     }
 
