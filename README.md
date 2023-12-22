@@ -4,7 +4,7 @@
 
 如果想要下载尝试下的话可以直接可以点击下面链接：
 
-[https://github.com/lovelyefyyucui/PlayAndroidYe/raw/master/apk/app-debug.apk](https://github.com/lovelyefyyucui/PlayAndroidYe/raw/master/apk/app-debug.apk)
+[https://gitee.com/e27326/PlayAndroidYe/raw/dev/apk/app-debug.apk](https://gitee.com/e27326/PlayAndroidYe/raw/dev/apk/app-debug.apk)
 
 ### 玩安卓MVVM版截图
 
@@ -65,7 +65,7 @@ room
 ### License
 
 ```xml
-Copyright (c) 2023 叶峰云
+Copyright (c) 2023 叶峰云、zhujiang
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

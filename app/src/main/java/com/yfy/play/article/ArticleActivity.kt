@@ -13,6 +13,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yfy.core.util.getHtmlText
 import com.yfy.core.util.showShortToast
+import com.yfy.core.util.showToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.model.model.CollectX
 import com.yfy.model.room.entity.Article
@@ -142,7 +143,7 @@ class ArticleActivity : BaseActivity(), View.OnClickListener {
             R.id.bottomDialogLlCopy -> {
                 bottomSheetDialog?.dismiss()
                 ArticleUtils.copyToClipboard(this, pageUrl)
-                showShortToast(getString(R.string.copy_succeeded))
+                showToast(getString(R.string.copy_succeeded))
             }
             R.id.bottomDialogLlBrowser -> {
                 bottomSheetDialog?.dismiss()
