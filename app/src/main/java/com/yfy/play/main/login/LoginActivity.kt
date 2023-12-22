@@ -22,7 +22,7 @@ import com.yfy.play.main.login.bean.LoginState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class LoginActivity : BaseActivity(), TextWatcher {
+class LoginActivity : BaseActivity() {
     private var binding by releasableNotNull<ActivityLoginBinding>()
     private val viewModel by viewModels<LoginViewModelHilt>()
     private var watcher by releasableNotNull<TextWatcher>()
@@ -96,7 +96,15 @@ class LoginActivity : BaseActivity(), TextWatcher {
                     loginPassEdit.text.toString().trim().length
                 )
             }
-            loginPassEdit?.addTextChangedListener(this@LoginActivity)
+
+            loginPassEdit?.let {
+                watcher = it.onTextChange {
+                    afterTextChanged { s ->
+                        binding.loginPassClear?.isVisible = !s.isNullOrEmpty()
+                    }
+                }
+            }
+
             loginPassEdit?.transformationMethod =
                 PasswordTransformationMethod.getInstance() //设置密码输入变换方法
         }
@@ -201,20 +209,13 @@ class LoginActivity : BaseActivity(), TextWatcher {
         binding.loginInputElements.isVisible = !visible
     }
 
-    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-    }
-
-    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-    }
-
-    override fun afterTextChanged(s: Editable?) {
-        binding.loginPassClear?.isVisible = !s.isNullOrEmpty()
-    }
 
 
     override fun onDestroy() {
+        if (::watcher.isInitialed()) {
+            binding.loginPassEdit?.removeTextChangedListener(watcher)
+            ::watcher.release()
+        }
         if (::binding.isInitialed()) {
             ::binding.release()
         }
