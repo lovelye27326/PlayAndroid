@@ -77,10 +77,10 @@ abstract class BaseHomeBottomTabWidget @JvmOverloads constructor(
         currentFragment = targetFg
     }
 
-    private val mHomeFragment: HomePageFragment by lazy { HomePageFragment.newInstance() }
-    private val mProjectFragment: ProjectFragment by lazy { ProjectFragment.newInstance() }
-    private val mObjectListFragment: OfficialAccountsFragment by lazy { OfficialAccountsFragment.newInstance() }
-    private val mProfileFragment: ProfileFragment by lazy { ProfileFragment.newInstance() }
+    private val mHomeFragment: HomePageFragment by lazy(LazyThreadSafetyMode.NONE) { HomePageFragment.newInstance() } //直接用by lazy不带参数有加锁操作
+    private val mProjectFragment: ProjectFragment by lazy(LazyThreadSafetyMode.NONE) { ProjectFragment.newInstance() }
+    private val mObjectListFragment: OfficialAccountsFragment by lazy(LazyThreadSafetyMode.NONE) { OfficialAccountsFragment.newInstance() }
+    private val mProfileFragment: ProfileFragment by lazy(LazyThreadSafetyMode.NONE) { ProfileFragment.newInstance() }
 
     private fun getCurrentFragment(index: Int): Fragment {
         return when (index) {

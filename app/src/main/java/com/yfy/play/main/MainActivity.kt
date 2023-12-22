@@ -11,10 +11,9 @@ import androidx.activity.viewModels
 import com.yfy.core.util.isInitialed
 import com.yfy.core.util.releasableNotNull
 import com.yfy.core.util.release
-import com.yfy.core.util.showShortToast
+import com.yfy.core.util.showToast
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
-import com.yfy.play.base.util.PermissionUtil
 import com.yfy.play.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.system.exitProcess
@@ -22,7 +21,7 @@ import kotlin.system.exitProcess
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
-    private var binding  by releasableNotNull<ActivityMainBinding>()
+    private var binding by releasableNotNull<ActivityMainBinding>()
     private val viewModel by viewModels<MainViewModel>()
     var isPort = true //是否竖直
 
@@ -57,7 +56,7 @@ class MainActivity : BaseActivity() {
 
     private fun exit() {
         if (System.currentTimeMillis() - exitTime > 2000) {
-            showShortToast(getString(R.string.exit_program))
+            showToast(getString(R.string.exit_program))
             exitTime = System.currentTimeMillis()
         } else {
             exitProcess(0)
