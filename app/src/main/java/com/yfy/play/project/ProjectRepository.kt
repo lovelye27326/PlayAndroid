@@ -7,6 +7,7 @@ import com.yfy.model.room.PlayDatabase
 import com.yfy.model.room.entity.PROJECT
 import com.yfy.network.base.PlayAndroidNetwork
 import com.yfy.play.base.liveDataFire
+import com.yfy.play.base.util.PreferencesStorage
 import com.yfy.play.home.DOWN_PROJECT_ARTICLE_TIME
 import com.yfy.play.home.FOUR_HOUR
 import dagger.hilt.android.scopes.ActivityRetainedScoped
@@ -19,7 +20,7 @@ import javax.inject.Inject
  *
  */
 @ActivityRetainedScoped
-class ProjectRepository @Inject constructor(val application: Application) {
+class ProjectRepository @Inject constructor(val application: Application,  private val preferencesStorage: PreferencesStorage) {
 
     private val projectClassifyDao = PlayDatabase.getDatabase(application).projectClassifyDao()
     private val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
@@ -49,11 +50,11 @@ class ProjectRepository @Inject constructor(val application: Application) {
      */
     fun getProject(query: QueryArticle) = liveDataFire {
         if (query.page == 1) {
-            val dataStore = DataStoreUtils
+//            val dataStore = DataStoreUtils
             val articleListForChapterId =
                 articleListDao.getArticleListForChapterId(PROJECT, query.cid)
             var downArticleTime = 0L
-            dataStore.readLongFlow(DOWN_PROJECT_ARTICLE_TIME, System.currentTimeMillis()).first {
+            preferencesStorage.getLongData(DOWN_PROJECT_ARTICLE_TIME, System.currentTimeMillis()).first {
                 downArticleTime = it
                 true
             }
@@ -68,7 +69,7 @@ class ProjectRepository @Inject constructor(val application: Application) {
                         projectTree.data.datas.forEach {
                             it.localType = PROJECT
                         }
-                        dataStore.saveLongData(
+                        preferencesStorage.putLongData(
                             DOWN_PROJECT_ARTICLE_TIME,
                             System.currentTimeMillis()
                         )

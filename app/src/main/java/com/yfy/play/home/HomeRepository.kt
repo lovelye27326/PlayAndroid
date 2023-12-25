@@ -1,6 +1,5 @@
 package com.yfy.play.home
 
-import com.yfy.play.base.util.PreferencesStorage
 import android.annotation.SuppressLint
 import android.app.Application
 import com.bumptech.glide.Glide
@@ -20,6 +19,7 @@ import com.yfy.model.room.entity.HOME
 import com.yfy.model.room.entity.HOME_TOP
 import com.yfy.network.base.PlayAndroidNetwork
 import com.yfy.play.base.liveDataFire
+import com.yfy.play.base.util.PreferencesStorage
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -32,7 +32,10 @@ import javax.inject.Inject
  * 首页
  */
 @ActivityRetainedScoped
-class HomeRepository @Inject constructor(val application: Application,  private val preferencesStorage: PreferencesStorage) {
+class HomeRepository @Inject constructor(
+    val application: Application,
+    private val preferencesStorage: PreferencesStorage
+) {
 
     /**
      * 获取banner
@@ -104,7 +107,10 @@ class HomeRepository @Inject constructor(val application: Application,  private 
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        LogUtil.e("HomeRepository", "insertBannerList onResourceReady: ${e.message}")
+                        LogUtil.e(
+                            "HomeRepository",
+                            "insertBannerList onResourceReady: ${e.message}"
+                        )
                     }
                     return false
                 }
@@ -123,19 +129,21 @@ class HomeRepository @Inject constructor(val application: Application,  private 
             if (query.page == 1) {
 //                val dataStore = DataStoreUtils
                 var downArticleTime = 0L
-                preferencesStorage.getLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis()).first {
-                    downArticleTime = it
-                    true
-                }
+                preferencesStorage.getLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis())
+                    .first {
+                        downArticleTime = it
+                        true
+                    }
                 val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
                 val articleListHome = articleListDao.getArticleList(HOME)
                 val articleListTop = articleListDao.getTopArticleList(HOME_TOP)
                 //先获取热门文章
                 var downTopArticleTime = 0L
-                preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis()).first {
-                    downTopArticleTime = it
-                    true
-                }
+                preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis())
+                    .first {
+                        downTopArticleTime = it
+                        true
+                    }
                 if (articleListTop.isNotEmpty() && downTopArticleTime > 0 &&
                     downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isNetRefresh //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
                 ) {
@@ -179,7 +187,10 @@ class HomeRepository @Inject constructor(val application: Application,  private 
                             articleList.data.datas.forEach {
                                 it.localType = HOME
                             }
-                            preferencesStorage.putLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis())
+                            preferencesStorage.putLongData(
+                                DOWN_ARTICLE_TIME,
+                                System.currentTimeMillis()
+                            )
                             articleListDao.deleteAll(HOME)
                             articleListDao.insertList(articleList.data.datas)
                         }

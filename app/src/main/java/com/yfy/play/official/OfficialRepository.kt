@@ -1,12 +1,12 @@
 package com.yfy.play.official
 
 import android.app.Application
-import com.yfy.core.util.DataStoreUtils
 import com.yfy.model.pojo.QueryArticle
 import com.yfy.model.room.PlayDatabase
 import com.yfy.model.room.entity.OFFICIAL
 import com.yfy.network.base.PlayAndroidNetwork
 import com.yfy.play.base.liveDataFire
+import com.yfy.play.base.util.PreferencesStorage
 import com.yfy.play.home.DOWN_OFFICIAL_ARTICLE_TIME
 import com.yfy.play.home.FOUR_HOUR
 import dagger.hilt.android.scopes.ActivityRetainedScoped
@@ -18,7 +18,8 @@ import javax.inject.Inject
  *
  */
 @ActivityRetainedScoped
-class OfficialRepository @Inject constructor(application: Application) {
+class OfficialRepository @Inject constructor(application: Application,
+                                             private val preferencesStorage: PreferencesStorage) {
 
     private val projectClassifyDao = PlayDatabase.getDatabase(application).projectClassifyDao()
     private val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
@@ -49,11 +50,11 @@ class OfficialRepository @Inject constructor(application: Application) {
      */
     fun getWxArticle(query: QueryArticle) = liveDataFire {
         if (query.page == 1) {
-            val dataStore = DataStoreUtils
+//            val dataStore = DataStoreUtils
             val articleListForChapterId =
                 articleListDao.getArticleListForChapterId(OFFICIAL, query.cid)
             var downArticleTime = 0L
-            dataStore.readLongFlow(DOWN_OFFICIAL_ARTICLE_TIME, System.currentTimeMillis()).first {
+            preferencesStorage.getLongData(DOWN_OFFICIAL_ARTICLE_TIME, System.currentTimeMillis()).first {
                 downArticleTime = it
                 true
             }
@@ -68,7 +69,7 @@ class OfficialRepository @Inject constructor(application: Application) {
                         projectTree.data.datas.forEach {
                             it.localType = OFFICIAL
                         }
-                        DataStoreUtils.saveLongData(DOWN_OFFICIAL_ARTICLE_TIME, System.currentTimeMillis())
+                        preferencesStorage.putLongData(DOWN_OFFICIAL_ARTICLE_TIME, System.currentTimeMillis())
                         if (query.isRefresh) {
                             articleListDao.deleteAll(OFFICIAL, query.cid)
                         }

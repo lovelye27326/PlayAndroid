@@ -20,7 +20,7 @@ fun bindAnalyticsService(impl: FirebaseAnalyticsService): AnalyticsService
 }
 这里使用 @Binds 将 FirebaseAnalyticsService 绑定到 AnalyticsService 接口。
 其中:
-- @Binds 表示这个是一个绑定方法,会把右边的实现类绑定到左边的接口上。
+- @Binds 表示这个是一个绑定方法,会把左边的实现类绑定到右边边的接口上(kotlin)。
 - 方法的返回值是绑定的接口,参数是具体的实现类。
 - 这样就可以通过接口来注入实现类了。
 然后在需要依赖注入的地方:
