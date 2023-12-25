@@ -9,9 +9,11 @@ import com.yfy.core.Play
 import com.yfy.core.util.LogUtil
 import com.yfy.core.util.showShortToast
 import com.yfy.model.model.Login
+import com.yfy.network.action.LoaderState
 import com.yfy.play.R
 import com.yfy.play.article.ArticleBroadCast
-import com.yfy.play.base.UserUseCase
+import com.yfy.play.base.LoginUseCase
+import com.yfy.play.base.RegisterUseCase
 import com.yfy.play.base.http
 import com.yfy.play.base.netRequest
 import com.yfy.play.main.login.bean.Account
@@ -67,24 +69,14 @@ val myViewModel = hiltViewModel<MyViewModel>()
 class LoginViewModelHilt @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val application: Application,
-    private val userUseCase: UserUseCase
+    private val loginUseCase: LoginUseCase,
+    private val registerUseCase: RegisterUseCase,
 ) : ViewModel() {
 
     companion object {
         private const val KEY_INFO = "key_info"
-//        private const val KEY_STATE = "state"
+        private const val KEY_STATE = "state"
     }
-
-    //  //region 数据加载状态
-//    private val _stateData = savedStateHandle.getLiveData<Int>(KEY_STATE)
-//    val stateData: LiveData<Int> get() = _stateData
-
-//    init {
-//        _stateData.value = LoaderState.STATE_INITIALIZED
-//    }
-
-    //   //endregion
-
 
     private val _state = savedStateHandle.getLiveData<LoginState>(
         KEY_INFO
@@ -112,11 +104,11 @@ class LoginViewModelHilt @Inject constructor(
 //                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
             }
             request {
-                LogUtil.i(
-                    "LoginViewModelHilt",
-                    "request start thread name: " + Thread.currentThread().name
-                ) //主线程里启动
-                userUseCase.getLoginRepository(account.username, account.password)
+//                LogUtil.i(
+//                    "LoginViewModelHilt",
+//                    "request start thread name: " + Thread.currentThread().name
+//                ) //主线程里启动
+                loginUseCase.getLoginInfo(account.username, account.password)
             } //retrofit内部使用非主线程
             success {
                 LogUtil.i(
@@ -149,11 +141,11 @@ class LoginViewModelHilt @Inject constructor(
 //                _stateData.value = LoaderState.STATE_LOADING //或者用liveDate传int方式
             }
             request {
-                LogUtil.i(
-                    "LoginViewModelHilt",
-                    "request start thread name: " + Thread.currentThread().name
-                ) //主线程里启动
-                userUseCase.getRegisterRepository(
+//                LogUtil.i(
+//                    "LoginViewModelHilt",
+//                    "request start thread name: " + Thread.currentThread().name
+//                ) //主线程里启动
+                registerUseCase.getRegisterInfo(
                     account.username,
                     account.password,
                     account.password
@@ -182,29 +174,6 @@ class LoginViewModelHilt @Inject constructor(
         }
 
     }
-    private fun registerHttp(account: Account) {
-        viewModelScope.http(
-            request = {
-                userUseCase.getRegisterRepository(
-                    account.username,
-                    account.password,
-                    account.password
-                )
-            },
-            response = { success(it, account.isLogin) },
-            error = { _state.postValue(LoginState.LoginError(it)) }
-        )
-    }
-
-
-    private fun loginHttp(account: Account) {
-        _state.postValue(LoginState.Logging)
-        viewModelScope.http(
-            request = { userUseCase.getLoginRepository(account.username, account.password) },
-            response = { success(it, account.isLogin) },
-            error = { _state.postValue(LoginState.LoginError(it)) }
-        )
-    }
 
 
     private fun success(it: Login?, isLogin: Boolean) {
@@ -219,6 +188,53 @@ class LoginViewModelHilt @Inject constructor(
             )
         )
     }
+
+
+
+    //region 数据加载状态
+
+//    private val _stateData = savedStateHandle.getLiveData<Int>(KEY_STATE)
+//    val stateData: LiveData<Int> get() = _stateData
+//    init {
+//        _stateData.value = LoaderState.STATE_INITIALIZED
+//    }
+
+    //endregion
+
+
+    //region 旧注册方法，方法前后的“region”和“endregion”开头结尾各隔一行，可选中代码区域右键用Ctrl+ALT+T 选择region...endregion Comments项，
+    // 可再点击“//“前折叠标志”-“号折叠起来代码
+
+    private fun registerHttp(account: Account) {
+        viewModelScope.http(
+            request = {
+                registerUseCase.getRegisterInfo(
+                    account.username,
+                    account.password,
+                    account.password
+                )
+            },
+            response = { success(it, account.isLogin) },
+            error = { _state.postValue(LoginState.LoginError(it)) }
+        )
+    }
+
+    //endregion
+
+    //region 旧登录方法
+
+    private fun loginHttp(account: Account) {
+        _state.postValue(LoginState.Logging)
+        viewModelScope.http(
+            request = { loginUseCase.getLoginInfo(account.username, account.password) },
+            response = { success(it, account.isLogin) },
+            error = { _state.postValue(LoginState.LoginError(it)) }
+        )
+    }
+
+    //endregion
+
+
 }
 
 

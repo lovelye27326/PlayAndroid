@@ -2,7 +2,6 @@ package com.yfy.play.main.login
 
 import android.animation.Animator
 import android.animation.ObjectAnimator
-import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.method.HideReturnsTransformationMethod
@@ -73,7 +72,7 @@ class LoginActivity : BaseActivity() {
         mTAG = "LoginAct"
         binding.apply {
             loginButton.clickTrigger(lifecycleScope) {
-                loginOrRegister()
+                commitLoginOrRegister()
             }
             loginTvRegister.clickTrigger(lifecycleScope) {
                 flipAnimatorXViewShow(loginInputElements)
@@ -155,7 +154,7 @@ class LoginActivity : BaseActivity() {
 //        }
     }
 
-    private fun loginOrRegister() {
+    private fun commitLoginOrRegister() {
         if (!judge()) return
         viewModel.toLoginOrRegister(Account(mUserName, mPassWord, mIsLogin))
     }

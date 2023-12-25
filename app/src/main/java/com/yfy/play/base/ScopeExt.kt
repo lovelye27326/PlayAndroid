@@ -42,9 +42,43 @@ fun <T> CoroutineScope.netRequest(block: RequestAction<T>.() -> Unit) {
 }
 
 
-/**
- * 当前协程未指定调度线程，恢复挂起的数据仍在当前线程中
- */
+private const val TAG = "ScopeExt"
+
+
+@ActivityRetainedScoped
+class LoginUseCase @Inject constructor(
+    //UseCase的构造函数含单个仓库调用单个函数最佳
+    val getLoginInfo: GetLoginRepository,
+)
+
+@ActivityRetainedScoped
+class RegisterUseCase @Inject constructor(
+    val getRegisterInfo: GetRegisterRepository
+)
+
+
+@ActivityRetainedScoped
+class GetLoginRepository @Inject constructor(private val service: LoginService) {
+    suspend operator fun invoke(username: String, password: String): BaseModel<Login> {
+        return service.getLogin(username, password)
+    }
+}
+
+@ActivityRetainedScoped
+class GetRegisterRepository @Inject constructor(private val service: LoginService) {
+    suspend operator fun invoke(
+        username: String,
+        password: String,
+        surePassword: String
+    ): BaseModel<Login> {
+        return service.getRegister(username, password, surePassword)
+    }
+}
+
+
+
+//region 旧同步http加载状态，当前协程未指定调度线程，恢复挂起的数据仍在当前线程中
+
 fun <T> CoroutineScope.http(
     request: (suspend () -> BaseModel<T>),
     response: (T?) -> Unit,
@@ -68,10 +102,11 @@ fun <T> CoroutineScope.http(
     }
 }
 
+//endregion
 
-/**
- * 当前协程指定调度线程，恢复挂起的数据仍在当前指定的线程中
- */
+
+//region 旧http协程异步加载方法， 当前协程指定调度线程，恢复挂起的数据仍在当前指定的线程中
+
 fun <T> CoroutineScope.http2(
     request: (suspend () -> BaseModel<T>),
     response: (T?) -> Unit,
@@ -96,33 +131,14 @@ fun <T> CoroutineScope.http2(
     }
 }
 
-private const val TAG = "ScopeExt"
+//endregion
+
+//region 提示
 
 private fun showToast(isShow: Boolean, msg: String?) {
     LogUtil.i(TAG, "showToast: isShow:$isShow   msg:$msg")
+    if (isShow)
+        com.yfy.core.util.showToast(msg)
 }
 
-
-@ActivityRetainedScoped
-class UserUseCase @Inject constructor(
-    val getLoginRepository: GetLoginRepository,
-    val getRegisterRepository: GetRegisterRepository
-)
-
-@ActivityRetainedScoped
-class GetLoginRepository @Inject constructor(private val service: LoginService) {
-    suspend operator fun invoke(username: String, password: String): BaseModel<Login> {
-        return service.getLogin(username, password)
-    }
-}
-
-@ActivityRetainedScoped
-class GetRegisterRepository @Inject constructor(private val service: LoginService) {
-    suspend operator fun invoke(
-        username: String,
-        password: String,
-        surePassword: String
-    ): BaseModel<Login> {
-        return service.getRegister(username, password, surePassword)
-    }
-}
+//endregion

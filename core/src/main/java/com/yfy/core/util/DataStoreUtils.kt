@@ -63,8 +63,8 @@ object DataStoreUtils {
     @Suppress("UNCHECKED_CAST")
     fun <U> getData(key: String, default: U): Flow<U> {
         val data = when (default) {
-            is Long -> readLongFlow(key, default)
-            is String -> readStringFlow(key, default)
+            is Long -> readLongFlow(dataStore, key, default)
+            is String -> readStringFlow(dataStore, key, default)
             is Int -> readIntFlow(key, default)
             is Boolean -> readBooleanFlow(key, default)
             is Float -> readFloatFlow(key, default)
@@ -75,8 +75,8 @@ object DataStoreUtils {
 
     suspend fun <U> putData(key: String, value: U) {
         when (value) {
-            is Long -> saveLongData(key, value)
-            is String -> saveStringData(key, value)
+            is Long -> saveLongData(dataStore, key, value)
+            is String -> saveStringData(dataStore, key, value)
             is Int -> saveIntData(key, value)
             is Boolean -> saveBooleanData(key, value)
             is Float -> saveFloatData(key, value)
@@ -145,7 +145,7 @@ object DataStoreUtils {
         return value
     }
 
-    fun readStringFlow(key: String, default: String = ""): Flow<String> =
+    fun readStringFlow(dataStore: DataStore<Preferences>, key: String, default: String = ""): Flow<String> =
         dataStore.data
             .catch {
                 if (it is IOException) {
@@ -193,7 +193,7 @@ object DataStoreUtils {
         return value
     }
 
-    fun readLongFlow(key: String, default: Long = 0L): Flow<Long> =
+    fun readLongFlow(dataStore: DataStore<Preferences>, key: String, default: Long = 0L): Flow<Long> =
         dataStore.data
             .catch {
                 if (it is IOException) {
@@ -234,13 +234,13 @@ object DataStoreUtils {
 
     fun saveSyncIntData(key: String, value: Int) = runBlocking { saveIntData(key, value) }
 
-    suspend fun saveStringData(key: String, value: String) {
+    suspend fun saveStringData(dataStore: DataStore<Preferences>, key: String, value: String) {
         dataStore.edit { mutablePreferences ->
             mutablePreferences[stringPreferencesKey(key)] = value
         }
     }
 
-    fun saveSyncStringData(key: String, value: String) = runBlocking { saveStringData(key, value) }
+    fun saveSyncStringData(key: String, value: String) = runBlocking { saveStringData(dataStore, key, value) }
 
     suspend fun saveFloatData(key: String, value: Float) {
         dataStore.edit { mutablePreferences ->
@@ -250,13 +250,13 @@ object DataStoreUtils {
 
     fun saveSyncFloatData(key: String, value: Float) = runBlocking { saveFloatData(key, value) }
 
-    suspend fun saveLongData(key: String, value: Long) {
+    suspend fun saveLongData(dataStore: DataStore<Preferences>, key: String, value: Long) {
         dataStore.edit { mutablePreferences ->
             mutablePreferences[longPreferencesKey(key)] = value
         }
     }
 
-    fun saveSyncLongData(key: String, value: Long) = runBlocking { saveLongData(key, value) }
+    private fun saveSyncLongData(key: String, value: Long) = runBlocking { saveLongData(dataStore, key, value) }
 
     suspend fun clear() {
         dataStore.edit {

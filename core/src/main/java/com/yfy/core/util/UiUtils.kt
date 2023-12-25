@@ -26,7 +26,7 @@ inline fun View.setSafeListener(crossinline action: () -> Unit) {
     }
 }
 
-private var sGcWatcher: WeakReference<GcWatcherInternal>? = null
+private var sGcWatcher: WeakReference<GcWatcher>? = null
 
 /**
  * 监听gc发生
@@ -34,7 +34,7 @@ private var sGcWatcher: WeakReference<GcWatcherInternal>? = null
 fun initGcWatcher() {
     if (sGcWatcher == null) {
         LogUtil.i("UiUtils", "GcWatcher is init")
-        sGcWatcher = WeakReference(GcWatcherInternal())
+        sGcWatcher = WeakReference(GcWatcher())
     } else {
         LogUtil.e("UiUtils", "GcWatcher is already init,don't need init again")
     }
@@ -42,13 +42,13 @@ fun initGcWatcher() {
 
 private var sLastGcTime = 0L
 
-private class GcWatcherInternal {
+private class GcWatcher {
     @kotlin.jvm.Throws(Throwable::class)
     protected fun finalize() {
         val now = SystemClock.uptimeMillis()
         val happenDuration = now - sLastGcTime
         LogUtil.i("UiUtils", "happened gc!!！！！！！！!$now - $sLastGcTime = $happenDuration ms interval from last time")
         sLastGcTime = now
-        sGcWatcher = WeakReference(GcWatcherInternal())
+        sGcWatcher = WeakReference(GcWatcher())
     }
 }

@@ -1,11 +1,16 @@
 package com.yfy.play.base
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.yfy.network.base.ServiceCreator
 import com.yfy.network.service.LoginService
 import com.yfy.core.util.GsonUtils
+import com.yfy.core.util.dataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -40,6 +45,7 @@ object AppModule {
             .build()
     }
 
+
     @Singleton
     @Provides
     fun providerLoginService(retrofit: Retrofit): LoginService {  //通过函数参数传入retrofit
@@ -60,12 +66,26 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providerUserUseCase(
+    fun providerLoginUseCase(
         getLoginRepository: GetLoginRepository,
-        getRegisterRepository: GetRegisterRepository
-    ): UserUseCase {
-        return UserUseCase(getLoginRepository, getRegisterRepository)
+    ): LoginUseCase {
+        return LoginUseCase(getLoginRepository)
     }
 
+
+    @Singleton
+    @Provides
+    fun providerRegisterUseCase(
+        getRegisterRepository: GetRegisterRepository
+    ): RegisterUseCase {
+        return RegisterUseCase(getRegisterRepository)
+    }
+
+
+    @Singleton
+    @Provides
+    fun providerDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return context.dataStore //提供DataStore
+    }
 
 }

@@ -1,8 +1,8 @@
 package com.yfy.play.home
 
+import com.yfy.play.base.util.PreferencesStorage
 import android.annotation.SuppressLint
 import android.app.Application
-import android.util.Log
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.RequestManager
@@ -10,7 +10,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.yfy.core.util.DataStoreUtils
 import com.yfy.core.util.LogUtil
 import com.yfy.model.pojo.QueryHomeArticle
 import com.yfy.model.room.PlayDatabase
@@ -33,16 +32,16 @@ import javax.inject.Inject
  * 首页
  */
 @ActivityRetainedScoped
-class HomeRepository @Inject constructor(val application: Application) {
+class HomeRepository @Inject constructor(val application: Application,  private val preferencesStorage: PreferencesStorage) {
 
     /**
      * 获取banner
      */
     fun getBanner() = liveDataFire {
         coroutineScope {
-            val dataStore = DataStoreUtils
+//            val dataStore = DataStoreUtils
             var downImageTime = 0L
-            dataStore.readLongFlow(DOWN_IMAGE_TIME, System.currentTimeMillis()).first {
+            preferencesStorage.getLongData(DOWN_IMAGE_TIME, System.currentTimeMillis()).first {
                 downImageTime = it
                 true
             }
@@ -56,7 +55,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                 val bannerResponse = bannerResponseDeferred.await()
                 if (bannerResponse.errorCode == 0) {
                     val bannerList = bannerResponse.data
-                    dataStore.saveLongData(DOWN_IMAGE_TIME, System.currentTimeMillis())
+                    preferencesStorage.putLongData(DOWN_IMAGE_TIME, System.currentTimeMillis())
                     if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) { //数据库本地list数据头条非空且和api返回的头条一致
                         Result.success(bannerBeanList)
                     } else {
@@ -122,9 +121,9 @@ class HomeRepository @Inject constructor(val application: Application) {
         coroutineScope {
             val res = arrayListOf<Article>()
             if (query.page == 1) {
-                val dataStore = DataStoreUtils
+//                val dataStore = DataStoreUtils
                 var downArticleTime = 0L
-                dataStore.readLongFlow(DOWN_ARTICLE_TIME, System.currentTimeMillis()).first {
+                preferencesStorage.getLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis()).first {
                     downArticleTime = it
                     true
                 }
@@ -133,7 +132,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                 val articleListTop = articleListDao.getTopArticleList(HOME_TOP)
                 //先获取热门文章
                 var downTopArticleTime = 0L
-                dataStore.readLongFlow(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis()).first {
+                preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis()).first {
                     downTopArticleTime = it
                     true
                 }
@@ -153,7 +152,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                             topArticleList.data.forEach {
                                 it.localType = HOME_TOP
                             }
-                            dataStore.saveLongData( //设置保存数据缓存的时间
+                            preferencesStorage.putLongData( //设置保存数据缓存的时间
                                 DOWN_TOP_ARTICLE_TIME,
                                 System.currentTimeMillis()
                             )
@@ -180,7 +179,7 @@ class HomeRepository @Inject constructor(val application: Application) {
                             articleList.data.datas.forEach {
                                 it.localType = HOME
                             }
-                            dataStore.saveLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis())
+                            preferencesStorage.putLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis())
                             articleListDao.deleteAll(HOME)
                             articleListDao.insertList(articleList.data.datas)
                         }
