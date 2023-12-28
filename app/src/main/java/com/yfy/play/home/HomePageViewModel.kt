@@ -19,16 +19,15 @@ class HomePageViewModel @Inject constructor(
     private val homeRepository: HomeRepository
 ) : ViewModel() {
 
-    private val pageLiveData = MutableLiveData<QueryHomeArticle>()
-
-    val bannerList = ArrayList<BannerBean>()
+    val bannerList = ArrayList<BannerBean>() //vm里缓存HomePageFrg的轮播图数据
 
     val bannerList2 = ArrayList<BannerBean>()
 
     val articleList = ArrayList<Article>()
 
+    private val pageLiveData = MutableLiveData<QueryHomeArticle>()
     val articleLiveData = Transformations.switchMap(pageLiveData) { query ->
-        homeRepository.getArticleList(query) //根据传入封装QueryHomeArticle(page, isRefresh)的query对象进行筛选条件api获取
+        homeRepository.getArticleList(query) //通过pageLiveData传入封装好的QueryHomeArticle(page, isRefresh)的query对象进行筛选条件api获取
     }
 
     fun getBanner() = homeRepository.getBanner()

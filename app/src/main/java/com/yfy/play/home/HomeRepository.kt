@@ -9,6 +9,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.yfy.core.util.DataStoreUtils
 import com.yfy.core.util.LogUtil
 import com.yfy.model.pojo.QueryHomeArticle
 import com.yfy.model.room.PlayDatabase
@@ -20,6 +21,7 @@ import com.yfy.model.room.entity.HOME_TOP
 import com.yfy.network.base.PlayAndroidNetwork
 import com.yfy.play.base.liveDataFire
 import com.yfy.play.base.util.PreferencesStorage
+import com.yfy.play.base.util.TimeUtils
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -44,10 +46,13 @@ class HomeRepository @Inject constructor(
         coroutineScope {
 //            val dataStore = DataStoreUtils
             var downImageTime = 0L
-            preferencesStorage.getLongData(DOWN_IMAGE_TIME, System.currentTimeMillis()).first {
+            val isCondition: suspend (Long) -> Boolean = {
                 downImageTime = it
-                true
+                true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
             }
+            preferencesStorage.getLongData(DOWN_IMAGE_TIME, System.currentTimeMillis()).first(isCondition)
+            val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
+            LogUtil.i("HomeRepository", "downArticleTime = $formatTime")
             val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
             val bannerBeanList = bannerBeanDao.getBannerBeanList()
             if (bannerBeanList.isNotEmpty() && downImageTime > 0 && downImageTime - System.currentTimeMillis() < ONE_DAY) {
@@ -122,6 +127,38 @@ class HomeRepository @Inject constructor(
     /**
      * 首页获取文章列表
      * @param query 查询条件
+     *
+     *
+     * Kotlin的Flow<T>.first(predicate: suspend (T) -> Boolean): T函数用于从Flow中获取第一个满足给定predicate函数的元素。
+     * 这个函数是suspend函数，这意味着它需要在协程中调用。
+
+    以下是一个使用示例：
+
+    kotlin
+    import kotlinx.coroutines.flow.*
+
+    fun main() = runBlocking<Unit> {
+    // 创建一个Flow
+    val numbers = flow {
+    emit(1)
+    emit(2)
+    emit(3)
+    emit(4)
+    emit(5)
+    }
+
+    // 定义一个predicate函数，检查元素是否是偶数
+    val isEven: suspend (Int) -> Boolean = { it % 2 == 0 }
+
+    // 使用first函数获取Flow中第一个偶数
+    val firstEvenNumber = numbers.first(isEven)
+
+    println("First even number: $firstEvenNumber") // 输出：First even number: 2
+    }
+    在这个例子中，我们创建了一个包含一系列整数的Flow。然后我们定义了一个predicate函数isEven，它检查一个整数是否是偶数。
+    最后，我们使用first函数和这个predicate函数来获取Flow中的第一个偶数，并打印出来。如果Flow中没有元素满足predicate函数，
+    那么first函数会抛出NoSuchElementException异常。
+     *
      */
     fun getArticleList(query: QueryHomeArticle) = liveDataFire {
         coroutineScope {
@@ -129,21 +166,27 @@ class HomeRepository @Inject constructor(
             if (query.page == 1) {
 //                val dataStore = DataStoreUtils
                 var downArticleTime = 0L
+                val isCondition: suspend (Long) -> Boolean = {
+                    downArticleTime = it
+                    true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
+                }
                 preferencesStorage.getLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis())
-                    .first {
-                        downArticleTime = it
-                        true
-                    }
+                    .first(isCondition)
+                val formatTime = TimeUtils.formatTimestampWithZone8(downArticleTime, "")
+                LogUtil.i("HomeRepository", "downArticleTime = $formatTime")
                 val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
                 val articleListHome = articleListDao.getArticleList(HOME)
                 val articleListTop = articleListDao.getTopArticleList(HOME_TOP)
                 //先获取热门文章
                 var downTopArticleTime = 0L
+                val condition: suspend (Long) -> Boolean = {
+                    downTopArticleTime = it
+                    true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
+                }
                 preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis())
-                    .first {
-                        downTopArticleTime = it
-                        true
-                    }
+                    .first(condition)
+                val formatTime2 = TimeUtils.formatTimestampWithZone8(downTopArticleTime, "")
+                LogUtil.i("HomeRepository", "downTopArticleTime = $formatTime2")
                 if (articleListTop.isNotEmpty() && downTopArticleTime > 0 &&
                     downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isNetRefresh //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
                 ) {

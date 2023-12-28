@@ -1,6 +1,7 @@
 package com.yfy.play
 
 import android.app.Application
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
@@ -26,13 +27,14 @@ class App : Application() {
         super.onCreate()
         Play.initialize(this)
         Util.init(this)
-        initGcWatcher()
+        initValidators()
         initData()
     }
 
     private fun initData() {
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-            initValidators()
+            initGcWatcher()
+            AndroidThreeTen.init(applicationContext) //使用三方库格式化日期
             initBugLy()
         }
     }

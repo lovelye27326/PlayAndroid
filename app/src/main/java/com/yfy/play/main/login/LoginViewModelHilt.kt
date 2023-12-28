@@ -75,7 +75,7 @@ class LoginViewModelHilt @Inject constructor(
 
     companion object {
         private const val KEY_INFO = "key_info"
-        private const val KEY_STATE = "state"
+//        private const val KEY_STATE = "state"
     }
 
     private val _state = savedStateHandle.getLiveData<LoginState>(

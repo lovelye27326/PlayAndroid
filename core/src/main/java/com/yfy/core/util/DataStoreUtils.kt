@@ -4,10 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
 
@@ -30,12 +28,51 @@ import java.io.IOException
  *
  * 描述：DataStore 工具类
  *
+ * Kotlin DataStore 的 data 属性返回一个 Flow，用于观察存储中的数据变化。当你从 DataStore 中收集数据时，Flow 会保持活跃状态，以便它可以发出数据存储中的任何更新。
+Flow 不会在收集完成后自动关闭，因为它是设计来提供持续的数据更新的。如果你想在某个条件满足后停止收集数据，你可以使用 Flow 的转换操作符，比如 takeWhile 或 first 来只收集需要的数据。
+例如，如果你想收集一次数据然后停止，你可以这样做：
+kotlin
+val dataStoreValue = dataStore.data
+.first() // 只获取一次数据，然后流会完成
+如果你想在满足特定条件后停止收集，可以使用 takeWhile：
+kotlin
+val dataStoreValue = dataStore.data
+.takeWhile { condition } // 当条件不再满足时，流会完成
+.collect { value ->
+// 处理值
+}
+在使用 collect 时，你需要在合适的时机取消协程的执行，这通常是在 ViewModel 的 onCleared 方法中或者在你的 UI 控制器（如 Activity 或 Fragment）的 onDestroy 方法中。例如：
+kotlin
+viewModelScope.launch {
+dataStore.data.collect { value ->
+// 处理数据
+}
+}
+
+override fun onCleared() {
+super.onCleared()
+viewModelScope.cancel() // 取消所有协程
+}
+在 UI 控制器中，你可能会使用 lifecycleScope：
+kotlin
+lifecycleScope.launchWhenStarted {
+dataStore.data.collect { value ->
+// 处理数据
+}
+}
+
+override fun onDestroy() {
+super.onDestroy()
+lifecycleScope.cancel() // 取消所有协程
+}
+确保在不再需要收集数据时取消协程，以避免内存泄漏。
+ *
  */
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "PlayAndroidDataStore")
 
 object DataStoreUtils {
-
+    private const val TAG = "DataStoreUtils"
     private lateinit var dataStore: DataStore<Preferences>
 
     /**
@@ -110,17 +147,102 @@ object DataStoreUtils {
                 it[booleanPreferencesKey(key)] ?: default
             }
 
+
+    /**
+     * Kotlin的Flow<T>.first(predicate: suspend (T) -> Boolean): T函数用于从Flow中获取第一个满足给定predicate函数的元素。
+     * 这个函数是suspend函数，这意味着它需要在协程中调用。
+
+    以下是一个使用示例：
+
+    kotlin
+    import kotlinx.coroutines.flow.*
+
+    fun main() = runBlocking<Unit> {
+    // 创建一个Flow
+    val numbers = flow {
+    emit(1)
+    emit(2)
+    emit(3)
+    emit(4)
+    emit(5)
+    }
+
+    // 定义一个predicate函数，检查元素是否是偶数
+    val isEven: suspend (Int) -> Boolean = { it % 2 == 0 }
+
+    // 使用first函数获取Flow中第一个偶数
+    val firstEvenNumber = numbers.first(isEven)
+
+    println("First even number: $firstEvenNumber") // 输出：First even number: 2
+    }
+    在这个例子中，我们创建了一个包含一系列整数的Flow。然后我们定义了一个predicate函数isEven，它检查一个整数是否是偶数。最后，
+    我们使用first函数和这个predicate函数来获取Flow中的第一个偶数，并打印出来。如果Flow中没有元素满足predicate函数，
+    那么first函数会抛出NoSuchElementException异常。
+     */
     fun readBooleanData(key: String, default: Boolean = false): Boolean {
         var value = false
         runBlocking {
-            dataStore.data.first {
+            val isCondition: suspend (Preferences) -> Boolean = {
                 value = it[booleanPreferencesKey(key)] ?: default
-                true
+                true //总返回真，结束流收集
             }
+            dataStore.data.first(isCondition)
         }
         return value
     }
 
+    /**
+     * 转换流Flow<Preferences>类型为Flow<Int>类型，再在使用的地方如HomeRepository里通过first操作符取出后自动关闭流，避免泄漏
+     *
+     * Kotlin的Flow<T>.map函数用于对Flow中的每个元素应用一个转换函数，并生成一个新的Flow，其中包含转换后的元素。
+     * 这个函数是一个中间操作符，这意味着它不会立即执行任何计算，而是在收集时按需应用转换。
+     *
+     * Kotlin DataStore中的数据读取操作返回的Flow通常是冷流（Cold Flow）。
+
+    在Kotlin中，冷流是指每次有新的收集者（如collect函数）时，都会重新执行整个流的生成逻辑。
+    对于DataStore来说，这意味着每次启动一个新的收集流程时，它会从DataStore中查询最新的数据，并将这些数据作为流的一部分发送给收集者。
+    这是因为DataStore的设计目标是提供一种持久化的、键值对的数据存储方式，其数据通常不会自动更新。当你订阅一个从DataStore获取数据的Flow时，
+    你实际上是在请求当前存储在DataStore中的最新数据，而不是持续接收数据变化的通知。
+    如果你需要一个能够自动推送数据更新的热流（Hot Flow），你可能需要结合使用其他的Kotlin协程库功能，
+    如StateFlow或SharedFlow。你可以创建一个监听DataStore变化的回调，并在数据发生变化时更新相应的StateFlow或SharedFlow，这样其他部分的代码可以通过订阅这个热流来实时获取数据更新。
+
+    另外,
+       Kotlin DataStore中的数据读取Flow本身不会自动关闭收集。当你调用Flow的collect函数来获取和处理数据时，你需要自己管理收集的生命周期。
+
+    通常情况下，你应在某种可以控制其生命周期的范围内（如协程作用域、ViewModel、LifecycleOwner等）收集Flow。这样，当这个范围结束或者被销毁时，相关的协程任务也会被取消，包括对Flow的收集。
+
+    例如，在ViewModel中，你可以如下所示收集DataStore的Flow：
+
+    kotlin
+    class MyViewModel(private val dataStore: DataStore<Preferences>) : ViewModel() {
+
+    private val _myData = MutableStateFlow("")
+    val myData: StateFlow<String> get() = _myData
+
+    init {
+    viewModelScope.launch {
+    dataStore.data
+    .catch { exception ->
+    if (exception is IOException) {
+    // Handle IOExceptions here
+    }
+    emit(emptyPreferences())
+    }
+    .map { preferences ->
+    preferences.myKey ?: ""
+    }
+    .onEach { newValue ->
+    _myData.value = newValue
+    }
+    .launchIn(this)
+    }
+    }
+    }
+    在这个例子中，dataStore.data返回一个Flow，我们在ViewModel的生命周期范围内（通过viewModelScope）收集这个Flow。当ViewModel被清理时，由于launchIn函数的作用，对Flow的收集也会自动取消。
+
+    总的来说，虽然DataStore的Flow本身不会自动关闭收集，但通过在适当的生命周期范围内管理Flow的收集，你可以确保在不需要数据时能够正确地释放资源
+
+     */
     fun readIntFlow(key: String, default: Int = 0): Flow<Int> =
         dataStore.data
             .catch {
@@ -145,10 +267,15 @@ object DataStoreUtils {
         return value
     }
 
-    fun readStringFlow(dataStore: DataStore<Preferences>, key: String, default: String = ""): Flow<String> =
+    fun readStringFlow(
+        dataStore: DataStore<Preferences>,
+        key: String,
+        default: String = ""
+    ): Flow<String> =
         dataStore.data
             .catch {
                 if (it is IOException) {
+                    LogUtil.e(TAG, "readStringFlow ${it.message}")
                     it.printStackTrace()
                     emit(emptyPreferences())
                 } else {
@@ -193,10 +320,15 @@ object DataStoreUtils {
         return value
     }
 
-    fun readLongFlow(dataStore: DataStore<Preferences>, key: String, default: Long = 0L): Flow<Long> =
+    fun readLongFlow(
+        dataStore: DataStore<Preferences>,
+        key: String,
+        default: Long = 0L
+    ): Flow<Long> =
         dataStore.data
             .catch {
                 if (it is IOException) {
+                    LogUtil.e(TAG, "readLongFlow ${it.message}")
                     it.printStackTrace()
                     emit(emptyPreferences())
                 } else {
@@ -240,7 +372,8 @@ object DataStoreUtils {
         }
     }
 
-    fun saveSyncStringData(key: String, value: String) = runBlocking { saveStringData(dataStore, key, value) }
+    fun saveSyncStringData(key: String, value: String) =
+        runBlocking { saveStringData(dataStore, key, value) }
 
     suspend fun saveFloatData(key: String, value: Float) {
         dataStore.edit { mutablePreferences ->
@@ -256,7 +389,8 @@ object DataStoreUtils {
         }
     }
 
-    private fun saveSyncLongData(key: String, value: Long) = runBlocking { saveLongData(dataStore, key, value) }
+    private fun saveSyncLongData(key: String, value: Long) =
+        runBlocking { saveLongData(dataStore, key, value) }
 
     suspend fun clear() {
         dataStore.edit {
