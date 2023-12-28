@@ -185,7 +185,7 @@ class HomeRepository @Inject constructor(
                 }
                 preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis())
                     .first(condition)
-                val formatTime2 = TimeUtils.formatTimestampWithZone8(downTopArticleTime, "")
+                val formatTime2 = TimeUtils.formatTimestamp(downTopArticleTime, "")
                 LogUtil.i("HomeRepository", "downTopArticleTime = $formatTime2")
                 if (articleListTop.isNotEmpty() && downTopArticleTime > 0 &&
                     downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isNetRefresh //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
