@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import com.yfy.core.util.LogUtil
 import com.yfy.core.util.isZhLanguage
 import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
@@ -85,9 +86,11 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             articleAdapter = ArticleAdapter(viewModel.articleList, true, this@HomePageFragment)
             homeToTopRecyclerView.onRefreshListener({
                 page = 1
+                LogUtil.i("HomePageFrg", "refresh page = $page")
                 getArticleList(true)
             }, {
                 page++
+                LogUtil.i("HomePageFrg", "loadMore page = $page")
                 getArticleList(false)
             })
             homeToTopRecyclerView.setAdapter(articleAdapter)
