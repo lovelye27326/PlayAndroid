@@ -52,7 +52,7 @@ class HomeRepository @Inject constructor(
             }
             preferencesStorage.getLongData(DOWN_IMAGE_TIME, System.currentTimeMillis()).first(isCondition)
             val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
-            LogUtil.i("HomeRepository", "downArticleTime = $formatTime")
+            LogUtil.i("HomeRepository", "downImageTime = $formatTime")
             val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
             val bannerBeanList = bannerBeanDao.getBannerBeanList()
             if (bannerBeanList.isNotEmpty() && downImageTime > 0 && downImageTime - System.currentTimeMillis() < ONE_DAY) {
