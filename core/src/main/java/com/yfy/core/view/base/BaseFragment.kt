@@ -42,6 +42,7 @@ abstract class BaseFragment : Fragment(), ILce, BaseFragmentInit {
     private var loading: View? = null
 
     private var defaultLce: ILce? = null
+    private var isLoaded = false //是否已经加载过数据
 
     protected open fun isHaveHeadMargin(): Boolean {
         return true
@@ -77,7 +78,6 @@ abstract class BaseFragment : Fragment(), ILce, BaseFragmentInit {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initView()
-        initData()
     }
 
     /**
@@ -135,6 +135,14 @@ abstract class BaseFragment : Fragment(), ILce, BaseFragmentInit {
             noContentView
         )
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!isLoaded) {
+            initData()
+            isLoaded = true
+        }
     }
 
     @CallSuper

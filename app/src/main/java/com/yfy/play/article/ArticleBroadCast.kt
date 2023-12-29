@@ -15,7 +15,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
  */
 object ArticleBroadCast {
 
-    const val COLLECT_RECEIVER = "com.zj.play.COLLECT"
+    const val COLLECT_RECEIVER = "com.yfy.play.COLLECT"
 
     fun sendArticleChangesReceiver(context: Context) {
         val intent = Intent(COLLECT_RECEIVER)
