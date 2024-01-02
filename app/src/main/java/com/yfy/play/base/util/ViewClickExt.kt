@@ -16,6 +16,8 @@ package com.yfy.play.base.util
 
 import android.view.View
 import androidx.lifecycle.LifecycleCoroutineScope
+import com.simple.spiderman.SpiderMan
+import com.yfy.core.util.LogUtil
 import com.yfy.play.R
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.SendChannel
@@ -29,7 +31,9 @@ import kotlinx.coroutines.flow.onEach
 fun <E> SendChannel<E>.safeSend(value: E) = try {
     trySend(value)
 } catch (e: CancellationException) {
+    LogUtil.e("safeSend", "err: ${e.message}")
     e.printStackTrace()
+    SpiderMan.show(e)
 }
 
 fun View.clickFlow(): Flow<View> {
