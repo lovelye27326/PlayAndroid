@@ -263,6 +263,9 @@ public class StringUtil {
     //-----------------------------------------------------------------------
 
     /**
+     *
+     * 用空格分隔字符串
+     *
      * <p>Splits the provided text into an array, using whitespace as the
      * separator. Whitespace is defined by {@link Character#isWhitespace(char)}.</p>
      * <p/>

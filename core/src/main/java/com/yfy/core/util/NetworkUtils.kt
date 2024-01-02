@@ -17,15 +17,15 @@ fun Context?.checkNetworkAvailable(): Boolean {
         getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
     val network = connectivityManager?.activeNetwork
     return if (network == null) {
-        Log.w("checkNetworkAvailable", "Now no network")
+        LogUtil.w("checkNetworkAvailable", "Now no network")
         false
     } else {
         val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
         if (networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) != false) {
-            Log.w("checkNetworkAvailable", "Now is cellular")
+            LogUtil.w("checkNetworkAvailable", "Now is cellular")
         }
         if (networkCapabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) != false) {
-            Log.w("checkNetworkAvailable", "Now is WIFI")
+            LogUtil.w("checkNetworkAvailable", "Now is WIFI")
         }
         true
     }

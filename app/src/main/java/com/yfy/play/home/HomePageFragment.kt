@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import com.yfy.core.util.LogUtil
-import com.yfy.core.util.isZhLanguage
+import com.yfy.core.util.*
 import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
+import com.yfy.play.base.util.PermissionUtil
 import com.yfy.play.databinding.FragmentHomePageBinding
 import com.yfy.play.home.almanac.AlmanacActivity
 import com.yfy.play.home.search.SearchActivity
@@ -23,7 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class HomePageFragment : ArticleCollectBaseFragment() {
 
     private val viewModel by viewModels<HomePageViewModel>()
-    private var binding: FragmentHomePageBinding? = null
+    private var binding by releasableNotNull<FragmentHomePageBinding>()
 
     override fun getLayoutView(
         inflater: LayoutInflater,
@@ -31,24 +31,24 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         attachToRoot: Boolean
     ): View {
         binding = FragmentHomePageBinding.inflate(inflater, container, attachToRoot)
-        return binding!!.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding?.apply {
+        binding.apply {
             homeBanner.addBannerLifecycleObserver(viewLifecycleOwner)
-//            homeBanner2.addBannerLifecycleObserver(viewLifecycleOwner)
+    //            homeBanner2.addBannerLifecycleObserver(viewLifecycleOwner)
             homeBanner.setPageTransformer(ZoomOutPageTransformer())
-//            homeBanner2.setPageTransformer(DepthPageTransformer())
+    //            homeBanner2.setPageTransformer(DepthPageTransformer())
         }
     }
 
     override fun onResume() {
         super.onResume()
-        binding?.apply {
+        binding.apply {
             homeBanner.start()
-//            homeBanner2.start()
+    //            homeBanner2.start()
         }
     }
 
@@ -63,7 +63,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     private var page = 1
 
     override fun initView() {
-        binding?.apply {
+        binding.apply {
             homeTitleBar.setRightImage(R.drawable.home_search_button)
             if (isZhLanguage()) {
                 homeTitleBar.setTitleOnClickListener {
@@ -75,13 +75,13 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                 activity?.overridePendingTransition(R.anim.search_push_in, R.anim.fake_anim)
             }
             bannerAdapter = ImageAdapter(requireContext(), viewModel.bannerList)
-//            bannerAdapter2 = ImageAdapter(requireContext(), viewModel.bannerList2)
+    //            bannerAdapter2 = ImageAdapter(requireContext(), viewModel.bannerList2)
             homeBanner.adapter = bannerAdapter
             homeBanner.setBannerRound(20f)
             homeBanner.setIndicator(CircleIndicator(context)).start()
-//            homeBanner2.adapter = bannerAdapter2
-//            homeBanner2.setIndicator(CircleIndicator(context)).start()
-//            homeBanner2.setBannerRound(20f)
+    //            homeBanner2.adapter = bannerAdapter2
+    //            homeBanner2.setIndicator(CircleIndicator(context)).start()
+    //            homeBanner2.setBannerRound(20f)
             homeToTopRecyclerView.setRecyclerViewLayoutManager(true)
             articleAdapter = ArticleAdapter(viewModel.articleList, true, this@HomePageFragment)
             homeToTopRecyclerView.onRefreshListener({
@@ -118,7 +118,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             if (viewModel.bannerList.size > 0) loadFinished() //判断弱网情况加载结束
         }) {
             val size = it.size
-            Log.e("HomePageFrg", "List size: $size")
+            LogUtil.i("HomePageFrg", "List size: $size")
             val main = activity as MainActivity
             if (viewModel.bannerList.size > 0)
                 viewModel.bannerList.clear()
@@ -147,10 +147,17 @@ class HomePageFragment : ArticleCollectBaseFragment() {
 
     override fun onPause() {
         super.onPause()
-        binding?.apply {
+        binding.apply {
             homeBanner.stop()
-//            homeBanner2.stop()
+    //            homeBanner2.stop()
         }
+    }
+
+    override fun onDestroy() {
+        if (::binding.isInitialed()) {
+            ::binding.release()
+        }
+        super.onDestroy()
     }
 
     companion object {

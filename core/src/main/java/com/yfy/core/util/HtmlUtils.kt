@@ -5,12 +5,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
- * 版权：Zhujiang 个人版权
- *
- * @author zhujiang
- * 创建日期：11/16/20
- * 描述：PlayAndroid
- *
+ * Html
  */
 
 fun getHtmlText(text: String): String {

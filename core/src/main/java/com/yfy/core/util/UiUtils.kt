@@ -1,9 +1,22 @@
 package com.yfy.core.util
 
+import android.app.Activity
 import android.content.Context
+import android.graphics.Paint
+import android.net.Uri
+import android.os.Build
 import android.os.SystemClock
+import android.provider.MediaStore
 import android.view.View
+import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.annotation.IdRes
+import androidx.viewbinding.ViewBinding
+import com.google.gson.reflect.TypeToken
 import java.lang.ref.WeakReference
+import java.lang.reflect.Type
+import java.text.DecimalFormat
 
 /**
  * dip转换成pixel
@@ -51,4 +64,83 @@ private class GcWatcher {
         sLastGcTime = now
         sGcWatcher = WeakReference(GcWatcher())
     }
+}
+
+fun List<*>?.checkIndex(position: Int?): Boolean {
+    val p = position ?: return false
+    val l = this ?: return false
+    return p >= 0 && p < l.size
+}
+
+val List<*>?.length: Int
+    get() = this?.size ?: 0
+
+
+
+inline  fun <T> typeToken(): Type {
+    return object : TypeToken<T>(){}.type
+}
+
+typealias  Action<T> = ((o: T?) -> Unit)?
+
+fun <T : View> Activity.bindView(@IdRes res: Int): Lazy<T> {
+    return lazy { findViewById(res) }
+}
+
+fun TextView.setDeleteLine() {
+    paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+}
+
+val ActivityResult.isOk
+    get() = resultCode == Activity.RESULT_OK
+
+var View.isVisible
+    get() = (View.VISIBLE == this.visibility)
+    set(value) {
+        visibility = if (value) View.VISIBLE else View.GONE
+    }
+
+fun View.hide(){
+    visibility=View.GONE
+}
+
+fun View.show(){
+    visibility=View.VISIBLE
+}
+
+var View.isInVisible
+    get() = (View.INVISIBLE == this.visibility)
+    set(value) {
+        visibility = if (value) View.INVISIBLE else View.VISIBLE
+    }
+
+inline val EXTERNAL_MEDIA_IMAGES_URI_COMPATIBLE_Q: Uri
+    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Images.Media.getContentUri(
+            MediaStore.VOLUME_EXTERNAL_PRIMARY
+        )
+    } else {
+        MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+
+
+fun Float?.format2Digits(): String? {
+    return if (this == null) null
+    else {
+        val f = DecimalFormat.getNumberInstance()
+        f.maximumFractionDigits = 2
+        f.format(this)
+    }
+}
+
+inline fun <C> C?.ifNullOrBlank(defaultValue: () -> C): C where C : CharSequence =
+    if (isNullOrBlank()) defaultValue() else this
+
+
+fun String?.ifNullOrBlankAction(action: () -> Unit) {
+    if (isNullOrBlank()) action()
+}
+
+fun String?.notBlankAction(action: (str: String) -> Unit) {
+    if (!isNullOrBlank()) action(this)
 }

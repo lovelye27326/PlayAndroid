@@ -8,13 +8,18 @@ import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.view.animation.OvershootInterpolator
+import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.yfy.core.util.*
+import com.yfy.core.util.ToastUtil.showShort
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
-import com.yfy.play.base.util.*
+import com.yfy.play.base.dealer.DutyChain
+import com.yfy.play.base.dealer.Handler
+import com.yfy.play.base.util.PermissionUtil
+import com.yfy.play.base.util.clickTrigger
 import com.yfy.play.databinding.ActivityLoginBinding
 import com.yfy.play.main.login.bean.Account
 import com.yfy.play.main.login.bean.LoginState
@@ -25,6 +30,8 @@ class LoginActivity : BaseActivity() {
     private var binding by releasableNotNull<ActivityLoginBinding>()
     private val viewModel by viewModels<LoginViewModelHilt>()
     private var watcher by releasableNotNull<TextWatcher>()
+    private var chain by releasableNotNull<DutyChain<String, String>>()
+//    private var chain1 by releasableNotNull<DutyChain<String, String>>()
     private var mUserName = ""
     private var mPassWord = ""
     private var mIsLogin = true
@@ -37,7 +44,7 @@ class LoginActivity : BaseActivity() {
 
     /**
      * EditText 的 setTransformationMethod 方法用于设置输入变换方法。这可以用于控制用户在输入文本时的行为。
-     * 例如，你可以使用这个方法来实现密码输入（在输入时隐藏文本）或者电子邮件地址输入（在输入时自动添加“@”符号等）。
+     * 例如，你可以使用这个方法来实现密码输入（在输入时隐藏文本）或者电子邮件地址输入（在输入时在内容后面自动添加“@”符号等）。
 
     TransformationMethod 是一个接口，它定义了一个 getTransformation 方法，该方法返回一个 CharSequence，
     它表示应该显示给用户的文本，而不是原始输入的文本。
@@ -72,10 +79,34 @@ class LoginActivity : BaseActivity() {
         mTAG = "LoginAct"
         binding.apply {
             loginButton.clickTrigger(lifecycleScope) {
+                mUserName = loginUserNameEdit?.text.toString().ifNullOrBlank { "" }
+                chain =
+                    DutyChain<String, String>(mUserName).apply {
+                        addHandler(EmptyJudgeHandler("请输入用户名", loginUserNameEdit)) //loginUserNameEdit
+                        addHandler(LargestJudgeHandler("5", true, loginUserNameEdit))
+                    }
+                val ret = chain.execute()
+                if (ret == null || !Validators[String::class].validate(ret)) {
+                    return@clickTrigger
+                }
+                mPassWord = loginPassEdit?.text.toString().ifNullOrBlank { "" }
+                chain = //chain1
+                    DutyChain<String, String>(mPassWord).apply {
+                        addHandler(EmptyJudgeHandler("请输入密码", loginPassEdit)) //loginPassEdit
+                        addHandler(LargestJudgeHandler("5", false, loginPassEdit)) //loginPassEdit
+                    }
+                val ret1 = chain.execute()
+                if (ret1 == null || !Validators[String::class].validate(ret1)) {
+                    return@clickTrigger
+                }
+                if (!checkNetworkAvailable()) {
+                    showToast(getString(R.string.no_network))
+                    return@clickTrigger
+                }
                 commitLoginOrRegister()
             }
             loginTvRegister.clickTrigger(lifecycleScope) {
-                flipAnimatorXViewShow(loginInputElements)
+                flipAnimatorXViewShow(loginInputElements) //反转动画
             }
             loginPassClear?.clickTrigger(lifecycleScope) {
                 loginPassEdit?.setText("")
@@ -155,7 +186,7 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun commitLoginOrRegister() {
-        if (!judge()) return
+//        if (!judge()) return
         viewModel.toLoginOrRegister(Account(mUserName, mPassWord, mIsLogin))
     }
 
@@ -185,8 +216,6 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun judge(): Boolean {
-        mUserName = binding.loginUserNameEdit?.text.toString()
-        mPassWord = binding.loginPassEdit?.text.toString()
         if (TextUtils.isEmpty(mUserName) || mUserName.length < 5) {
             binding.loginUserNameEdit?.error =
                 getString(R.string.enter_name_format) //输入框设置error提示，偶尔会看不到提示error提示框，不太好
@@ -196,10 +225,7 @@ class LoginActivity : BaseActivity() {
             binding.loginPassEdit?.error = getString(R.string.enter_password_format)
             return false
         }
-        if (!checkNetworkAvailable()) {
-            showShortToast(getString(R.string.no_network))
-            return false
-        }
+
         return true
     }
 
@@ -208,6 +234,61 @@ class LoginActivity : BaseActivity() {
         binding.loginInputElements.isVisible = !visible
     }
 
+
+    /**
+     * 判空处理器
+     */
+    private class EmptyJudgeHandler(
+        private val tip: String,
+        private val editText: EditText? = null
+    ) : Handler<String, String> {
+        override fun handle(data: String, chain: Handler.Chain<String, String>): String? {
+            val filterString = data.let { //进行处理
+                LogUtil.i("EmptyJudgeHandler", "input: $it")
+                if (!Validators[String::class].validate(it)) {
+                    if (editText != null)
+                        ThreadUtils.getMainHandler().post {
+                            editText.error = tip
+                        }
+                    showShort(tip)
+                    return ""
+                }
+                it
+            }
+            return chain.next(filterString)
+        }
+    }
+
+
+    /**
+     * 最大输入处理器
+     */
+    private class LargestJudgeHandler(
+        private val maxLength: String = "5",
+        private val isUserName: Boolean = true,
+        private val editText: EditText? = null
+    ) : Handler<String, String> {
+        override fun handle(data: String, chain: Handler.Chain<String, String>): String? {
+            val filterString = data.let { //进行处理
+                LogUtil.i("LargestJudgeHandler", "input: $it")
+                if (it.length > maxLength.toInt()) {
+                    val tip = if (isUserName) {
+                        "用户名长度不能大于$maxLength"
+                    } else {
+                        "密码长度不能大于$maxLength"
+                    }
+                    if (editText != null)
+                        ThreadUtils.getMainHandler().post {
+                            editText.error = tip
+                        }
+                    showShort(tip)
+                    return ""
+                }
+                it
+            }
+            return chain.next(filterString)
+        }
+    }
 
 
     override fun onDestroy() {
@@ -218,6 +299,14 @@ class LoginActivity : BaseActivity() {
         if (::binding.isInitialed()) {
             ::binding.release()
         }
+        if (::chain.isInitialed()) {
+            chain.clear()
+            ::chain.release()
+        }
+//        if (::chain1.isInitialed()) {
+//            chain1.clear()
+//            ::chain1.release()
+//        }
         super.onDestroy()
         PermissionUtil.fixInputMethodManagerLeak(this)
     }

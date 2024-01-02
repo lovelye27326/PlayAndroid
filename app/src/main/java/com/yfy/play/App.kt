@@ -27,6 +27,7 @@ class App : Application() {
         super.onCreate()
         Play.initialize(this)
         Util.init(this)
+        initBugLy()
         initValidators()
         initData()
     }
@@ -34,8 +35,8 @@ class App : Application() {
     private fun initData() {
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             AndroidThreeTen.init(applicationContext) //使用三方库格式化日期
-            initBugLy()
-            initGcWatcher()
+            if (LogUtil.DEBUG_MODE)
+                initGcWatcher()
         }
     }
 
