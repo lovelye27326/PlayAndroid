@@ -29,11 +29,22 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 fun <E> SendChannel<E>.safeSend(value: E) = try {
-    trySend(value)
+    // 尝试发送一个元素
+    val result = trySend(value)
+    // 根据结果处理
+    if (result.isSuccess) {
+        LogUtil.i("safeSend", "trySend successful")
+    } else {
+        // 这里可以处理失败的情况，但通常不是通过捕获异常
+        if (result.isClosed) {
+            LogUtil.i("safeSend", "trySend  failed: Channel is closed")
+        } else {
+            LogUtil.i("safeSend", "trySend  failed")
+        }
+    }
 } catch (e: CancellationException) {
-    LogUtil.e("safeSend", "err: ${e.message}")
+    LogUtil.e("safeSend", "Cancel err: ${e.message}")
     e.printStackTrace()
-    SpiderMan.show(e)
 }
 
 fun View.clickFlow(): Flow<View> {
@@ -45,9 +56,23 @@ fun View.clickFlow(): Flow<View> {
     }
 }
 
-inline fun View.click(lifecycle: LifecycleCoroutineScope, crossinline onClick: (view: View) -> Unit) {
+/**
+ * 无延迟无防抖
+ */
+inline fun View.click(
+    lifecycle: LifecycleCoroutineScope,
+    crossinline onClick: (view: View) -> Unit
+) {
     clickFlow().onEach {
-        onClick(this)
+        try {
+            // 处理接收到的数据
+            onClick(this)
+        } catch (e: Exception) {
+            // 捕获并处理在处理数据时可能出现的异常
+            LogUtil.e("onClick", "err: ${e.message}")
+            e.printStackTrace()
+            SpiderMan.show(e)
+        }
     }.launchIn(lifecycle)
 }
 
@@ -67,7 +92,15 @@ inline fun View.clickDelayed(
 ) {
     clickFlow().onEach {
         delay(delayMillis)
-        onClick(this)
+        try {
+            // 处理接收到的数据
+            onClick(this)
+        } catch (e: Exception) {
+            // 捕获并处理在处理数据时可能出现的异常
+            LogUtil.e("onClick", "err: ${e.message}")
+            e.printStackTrace()
+            SpiderMan.show(e)
+        }
     }.launchIn(lifecycle)
 }
 
@@ -92,6 +125,14 @@ inline fun View.clickTrigger(
             return@onEach
         }
         setLastMillis(this, id, currentMillis)
-        onClick(this)
+        try {
+            // 处理接收到的数据
+            onClick(this)
+        } catch (e: Exception) {
+            // 捕获并处理在处理数据时可能出现的异常
+            LogUtil.e("onClick", "err: ${e.message}")
+            e.printStackTrace()
+            SpiderMan.show(e)
+        }
     }.launchIn(lifecycle)
 }

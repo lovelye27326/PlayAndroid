@@ -31,7 +31,8 @@ class LoginActivity : BaseActivity() {
     private val viewModel by viewModels<LoginViewModelHilt>()
     private var watcher by releasableNotNull<TextWatcher>()
     private var chain by releasableNotNull<DutyChain<String, String>>()
-//    private var chain1 by releasableNotNull<DutyChain<String, String>>()
+
+    //    private var chain1 by releasableNotNull<DutyChain<String, String>>()
     private var mUserName = ""
     private var mPassWord = ""
     private var mIsLogin = true
@@ -82,7 +83,12 @@ class LoginActivity : BaseActivity() {
                 mUserName = loginUserNameEdit?.text.toString().ifNullOrBlank { "" }
                 chain =
                     DutyChain<String, String>(mUserName).apply {
-                        addHandler(EmptyJudgeHandler("请输入用户名", loginUserNameEdit)) //loginUserNameEdit
+                        addHandler(
+                            EmptyJudgeHandler(
+                                "请输入用户名",
+                                loginUserNameEdit
+                            )
+                        ) //loginUserNameEdit
                         addHandler(MinLengthJudgeHandler("5", true, loginUserNameEdit))
                     }
                 val ret = chain.execute()
@@ -271,7 +277,7 @@ class LoginActivity : BaseActivity() {
         override fun handle(data: String, chain: Handler.Chain<String, String>): String? {
             val filterString = data.let { //进行处理
                 LogUtil.i("MinLengthJudgeHandler", "input: $it")
-                if (it.length < maxLength.toInt()) {
+                if (it.length < maxLength.toInt()) { // length 比较，当用it.toInt()可能报异常，clickTrigger里可用SpiderMan显示
                     val tip = if (isUserName) {
                         "用户名长度不能小于$maxLength"
                     } else {

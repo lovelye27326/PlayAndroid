@@ -374,7 +374,7 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
             }
         }
         if (containActivity) {
-            if (!activityList.getFirst().get().equals(activity)) {
+            if (activityList.getFirst() != null && activityList.getFirst().get() != null && !activityList.getFirst().get().equals(activity)) {
                 activityList.remove(activityWeakRef);
                 WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
                 activityList.addFirst(weakRefActivity);
