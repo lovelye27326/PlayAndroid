@@ -83,7 +83,7 @@ class LoginActivity : BaseActivity() {
                 chain =
                     DutyChain<String, String>(mUserName).apply {
                         addHandler(EmptyJudgeHandler("请输入用户名", loginUserNameEdit)) //loginUserNameEdit
-                        addHandler(LargestJudgeHandler("5", true, loginUserNameEdit))
+                        addHandler(MinLengthJudgeHandler("5", true, loginUserNameEdit))
                     }
                 val ret = chain.execute()
                 if (ret == null || !Validators[String::class].validate(ret)) {
@@ -93,7 +93,7 @@ class LoginActivity : BaseActivity() {
                 chain = //chain1
                     DutyChain<String, String>(mPassWord).apply {
                         addHandler(EmptyJudgeHandler("请输入密码", loginPassEdit)) //loginPassEdit
-                        addHandler(LargestJudgeHandler("5", false, loginPassEdit)) //loginPassEdit
+                        addHandler(MinLengthJudgeHandler("5", false, loginPassEdit)) //loginPassEdit
                     }
                 val ret1 = chain.execute()
                 if (ret1 == null || !Validators[String::class].validate(ret1)) {
@@ -261,21 +261,21 @@ class LoginActivity : BaseActivity() {
 
 
     /**
-     * 最大输入处理器
+     * 最小长度输入处理器
      */
-    private class LargestJudgeHandler(
+    private class MinLengthJudgeHandler(
         private val maxLength: String = "5",
         private val isUserName: Boolean = true,
         private val editText: EditText? = null
     ) : Handler<String, String> {
         override fun handle(data: String, chain: Handler.Chain<String, String>): String? {
             val filterString = data.let { //进行处理
-                LogUtil.i("LargestJudgeHandler", "input: $it")
-                if (it.length > maxLength.toInt()) {
+                LogUtil.i("MinLengthJudgeHandler", "input: $it")
+                if (it.length < maxLength.toInt()) {
                     val tip = if (isUserName) {
-                        "用户名长度不能大于$maxLength"
+                        "用户名长度不能小于$maxLength"
                     } else {
-                        "密码长度不能大于$maxLength"
+                        "密码长度不能小于$maxLength"
                     }
                     if (editText != null)
                         ThreadUtils.getMainHandler().post {
