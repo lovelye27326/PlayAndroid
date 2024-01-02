@@ -81,7 +81,7 @@ public final class ThreadUtils {
     }
 
     public static void runOnUiThread(final Runnable runnable) {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
+        if (isMainThread()) {
             runnable.run();
         } else {
             HANDLER.post(runnable);
