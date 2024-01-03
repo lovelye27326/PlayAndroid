@@ -683,7 +683,7 @@ public class ToastUtil {
             for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
                 if (activityWeakReference.get() != null) {
                     activity = activityWeakReference.get();
-                    if (!ScreenUtils.isActivityAlive(activity)) {
+                    if (ScreenUtils.isActivityAlive(activity)) {
                         continue;
                     }
                     if (!hasAliveActivity) {
@@ -711,7 +711,7 @@ public class ToastUtil {
                 for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
                     if (activityWeakReference.get() != null) {
                         Activity activity = activityWeakReference.get();
-                        if (!ScreenUtils.isActivityAlive(activity)) {
+                        if (ScreenUtils.isActivityAlive(activity)) {
                             continue;
                         }
                         final Window window = activity.getWindow();

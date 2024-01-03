@@ -71,14 +71,15 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
 
     Activity getTopActivity() {
         if (ActivityCollector.INSTANCE.size() == 0) return null;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity activity = activityWeakReference.get();
-                if (!ScreenUtils.isActivityAlive(activity)) {
-                    continue;
+        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
+            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
+                if (activityWeakReference.get() != null) {
+                    Activity activity = activityWeakReference.get();
+                    if (!ScreenUtils.isActivityAlive(activity)) { //未活跃状态的跳过
+                        continue;
+                    }
+                    return activity;
                 }
-                return activity;
-            }
         }
         return null;
     }

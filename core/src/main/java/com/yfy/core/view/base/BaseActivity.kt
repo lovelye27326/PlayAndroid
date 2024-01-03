@@ -11,10 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import com.scwang.smart.refresh.layout.util.SmartUtil.dp2px
 import com.yfy.core.R
-import com.yfy.core.util.LogUtil
-import com.yfy.core.util.cancelToast
-import com.yfy.core.util.showShortToast
-import com.yfy.core.util.transparentStatusBar
+import com.yfy.core.util.*
 import com.yfy.core.view.base.lce.DefaultLceImpl
 import com.yfy.core.view.base.lce.ILce
 import java.lang.ref.WeakReference
@@ -52,9 +49,18 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
 //    private var weakRefActivity: WeakReference<Activity>? = null
     protected var mTAG = this.javaClass.simpleName.toString()
 
+    //设置内容到屏幕顶部的margin是否等于statusbar， 可重写
+    open val isContentParentMarginTopEqualStatusBar = true
+    open val isFullScreen = true
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (isFullScreen) {
+            BarUtil.transparentStatusBar(this)
+        }
+        initWindow()
         super.onCreate(savedInstanceState)
-        transparentStatusBar()
+//        transparentStatusBar()
         setContentView(getLayoutView())
 //        weakRefActivity = WeakReference(this)
 //        ActivityCollector.add(weakRefActivity)
@@ -68,6 +74,8 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
         super.setContentView(view)
         setupViews()
     }
+
+    open fun initWindow() {}
 
     protected open fun setupViews() {
         val view = View.inflate(this, R.layout.layout_lce, null)
