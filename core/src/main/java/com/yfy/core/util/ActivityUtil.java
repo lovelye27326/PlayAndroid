@@ -1495,7 +1495,7 @@ public final class ActivityUtil {
      */
     public static boolean isActivityAlive(final Activity activity) {
         return activity != null && !activity.isFinishing()
-                && (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 || !activity.isDestroyed());
+                && !activity.isDestroyed(); //Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 ||
     }
 
     /**
@@ -1556,6 +1556,8 @@ public final class ActivityUtil {
         if (!isLoadAnim) {
             activity.overridePendingTransition(0, 0);
         }
+
+//        finishActivity(activity.getClass(), isLoadAnim);
     }
 
     /**
@@ -1572,6 +1574,8 @@ public final class ActivityUtil {
                                       @AnimRes final int exitAnim) {
         activity.finish();
         activity.overridePendingTransition(enterAnim, exitAnim);
+
+//        finishActivity(activity.getClass(), enterAnim, exitAnim);
     }
 
     /**
@@ -1600,6 +1604,7 @@ public final class ActivityUtil {
                     if (!isLoadAnim) {
                         mActivity.overridePendingTransition(0, 0);
                     }
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
         }
@@ -1624,6 +1629,7 @@ public final class ActivityUtil {
                 if (mActivity.getClass().equals(clz)) {
                     mActivity.finish();
                     mActivity.overridePendingTransition(enterAnim, exitAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
         }
@@ -1659,10 +1665,13 @@ public final class ActivityUtil {
                 if (mActivity.equals(activity)) {
                     if (isIncludeSelf) {
                         finishActivity(mActivity, isLoadAnim);
+                        ActivityCollector.INSTANCE.remove(activityWeakReference);
                     }
                     return true; //到当前页时结束循环
+                } else {
+                    finishActivity(mActivity, isLoadAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
-                finishActivity(mActivity, isLoadAnim);
             }
         }
         return false;
@@ -1690,10 +1699,13 @@ public final class ActivityUtil {
                 if (mActivity.equals(activity)) {
                     if (isIncludeSelf) {
                         finishActivity(mActivity, enterAnim, exitAnim);
+                        ActivityCollector.INSTANCE.remove(activityWeakReference);
                     }
                     return true; //到当前页时结束循环
+                } else {
+                    finishActivity(mActivity, enterAnim, exitAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
-                finishActivity(mActivity, enterAnim, exitAnim);
             }
         }
         return false;
@@ -1728,10 +1740,13 @@ public final class ActivityUtil {
                 if (mActivity.getClass().equals(clz)) {
                     if (isIncludeSelf) {
                         finishActivity(mActivity, isLoadAnim);
+                        ActivityCollector.INSTANCE.remove(activityWeakReference);
                     }
                     return true; //到当前页时结束循环
+                } else {
+                    finishActivity(mActivity, isLoadAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
-                finishActivity(mActivity, isLoadAnim);
             }
         }
         return false;
@@ -1759,10 +1774,13 @@ public final class ActivityUtil {
                 if (mActivity.getClass().equals(clz)) {
                     if (isIncludeSelf) {
                         finishActivity(mActivity, enterAnim, exitAnim);
+                        ActivityCollector.INSTANCE.remove(activityWeakReference);
                     }
                     return true; //到当前页时结束循环
+                } else {
+                    finishActivity(mActivity, enterAnim, exitAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
-                finishActivity(mActivity, enterAnim, exitAnim);
             }
         }
         return false;
@@ -1793,6 +1811,7 @@ public final class ActivityUtil {
                 Activity mActivity = activityWeakReference.get();
                 if (!mActivity.getClass().equals(clz)) {
                     finishActivity(mActivity, isLoadAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
         }
@@ -1816,6 +1835,7 @@ public final class ActivityUtil {
                 Activity mActivity = activityWeakReference.get();
                 if (!mActivity.getClass().equals(clz)) {
                     finishActivity(mActivity, enterAnim, exitAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
         }
@@ -1844,6 +1864,7 @@ public final class ActivityUtil {
                 if (!isLoadAnim) {
                     mActivity.overridePendingTransition(0, 0);
                 }
+                ActivityCollector.INSTANCE.remove(activityWeakReference);
             }
         }
     }
@@ -1865,6 +1886,7 @@ public final class ActivityUtil {
                 // sActivityList remove the index activity at onActivityDestroyed
                 mActivity.finish();
                 mActivity.overridePendingTransition(enterAnim, exitAnim);
+                ActivityCollector.INSTANCE.remove(activityWeakReference);
             }
         }
     }
@@ -1887,8 +1909,10 @@ public final class ActivityUtil {
         for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
             if (activityWeakReference.get() != null) {
                 Activity mActivity = activityWeakReference.get();
-                if (getTopActivity() != null && !mActivity.equals(getTopActivity())) {
+                Activity topActivity = getTopActivity();
+                if (topActivity != null && !mActivity.equals(topActivity)) {
                     finishActivity(mActivity, isLoadAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
         }
@@ -1908,8 +1932,10 @@ public final class ActivityUtil {
         for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
             if (activityWeakReference.get() != null) {
                 Activity mActivity = activityWeakReference.get();
-                if (getTopActivity() != null && !mActivity.equals(getTopActivity())) {
+                Activity topActivity = getTopActivity();
+                if (topActivity != null && !mActivity.equals(topActivity)) {
                     finishActivity(mActivity, enterAnim, exitAnim);
+                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
         }

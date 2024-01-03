@@ -153,7 +153,8 @@ class LoginActivity : BaseActivity() {
                 }
                 is LoginState.LoginSuccess -> {
                     toProgressVisible(false)
-                    ActivityUtil.finishToActivity(this, true) //结束包括当前登录页在内的其他活动页
+                    finish()
+//                    ActivityUtil.finishToActivity(this, true) //结束包括当前登录页在内的其他活动页
                 }
                 is LoginState.LoginError -> {
                     toProgressVisible(false)

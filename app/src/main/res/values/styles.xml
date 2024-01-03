@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
 
@@ -15,6 +15,27 @@
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <style name="AppTheme"
+        parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <item name="android:forceDarkAllowed"
+            tools:targetApi="q">false
+        </item>
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@android:color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant
+        </item>
+        <!--    <item name="android:windowTranslucentStatus">true</item>-->
+        <!--    <item name="android:fitsSystemWindows">true</item>-->
+        <!--    <item name="android:clipToPadding">false</item>-->
     </style>
 
     <style name="WelcomeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
