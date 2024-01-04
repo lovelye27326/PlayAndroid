@@ -182,6 +182,7 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
 
     override fun onDestroy() {
         super.onDestroy()
+        LogUtil.i("BaseActivity:onDestroy: $mTAG")
         // 销毁时toast cancel
         cancelToast()
 //        ActivityCollector.remove(weakRefActivity)

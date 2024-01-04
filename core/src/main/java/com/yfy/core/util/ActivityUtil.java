@@ -27,8 +27,10 @@ import com.yfy.core.view.base.ActivityCollector;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Activity工具
@@ -1370,9 +1372,9 @@ public final class ActivityUtil {
                                        @AnimRes final int enterAnim,
                                        @AnimRes final int exitAnim) {
         startActivities(intents, activity, getOptionsBundle(activity, enterAnim, exitAnim));
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            activity.overridePendingTransition(enterAnim, exitAnim);
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+//            activity.overridePendingTransition(enterAnim, exitAnim);
+//        }
     }
 
     /**
@@ -1506,7 +1508,7 @@ public final class ActivityUtil {
      */
     public static boolean isActivityExistsInStack(@NonNull final Activity activity) {
         if (ActivityCollector.INSTANCE.size() == 0) return false;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
+        for (final WeakReference<Activity> activityWeakReference : getActivityList()) {
             if (activityWeakReference.get() != null) {
                 Activity mActivity = activityWeakReference.get();
                 if (mActivity.equals(activity)) {
@@ -1525,7 +1527,7 @@ public final class ActivityUtil {
      */
     public static boolean isActivityExistsInStack(@NonNull final Class<? extends Activity> clz) {
         if (ActivityCollector.INSTANCE.size() == 0) return false;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
+        for (final WeakReference<Activity> activityWeakReference : getActivityList()) {
             if (activityWeakReference.get() != null) {
                 Activity mActivity = activityWeakReference.get();
                 if (mActivity.getClass().equals(clz)) {
@@ -1596,18 +1598,20 @@ public final class ActivityUtil {
     public static void finishActivity(@NonNull final Class<? extends Activity> clz,
                                       final boolean isLoadAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
+        Iterator<WeakReference<Activity>> iterator = getActivityList().iterator();
+        do {
+            WeakReference<Activity> item = iterator.next();
+            if (item.get() != null) {
+                Activity mActivity = item.get();
                 if (mActivity.getClass().equals(clz)) {
                     mActivity.finish();
                     if (!isLoadAnim) {
                         mActivity.overridePendingTransition(0, 0);
                     }
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
+                    iterator.remove();
                 }
             }
-        }
+        } while (iterator.hasNext());
     }
 
     /**
@@ -1623,16 +1627,18 @@ public final class ActivityUtil {
                                       @AnimRes final int enterAnim,
                                       @AnimRes final int exitAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
+        Iterator<WeakReference<Activity>> iterator = getActivityList().iterator();
+        do {
+            WeakReference<Activity> item = iterator.next();
+            if (item.get() != null) {
+                Activity mActivity = item.get();
                 if (mActivity.getClass().equals(clz)) {
                     mActivity.finish();
                     mActivity.overridePendingTransition(enterAnim, exitAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
+                    iterator.remove();
                 }
             }
-        }
+        } while (iterator.hasNext());
     }
 
 
@@ -1658,22 +1664,29 @@ public final class ActivityUtil {
                                            final boolean isIncludeSelf,
                                            final boolean isLoadAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return false;
-        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
-            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
-                if (mActivity.equals(activity)) {
-                    if (isIncludeSelf) {
+        // 获取该列表的逆向迭代器
+        ListIterator<WeakReference<Activity>> iterator = getActivityList().listIterator(ActivityCollector.INSTANCE.size());
+        // 使用 do...while 循环进行倒序遍历
+        do {
+            // 判断是否存在前一个元素
+            if (iterator.hasPrevious()) {
+                // 获取并移动到前一个元素
+                WeakReference<Activity> item = iterator.previous();
+                if (item.get() != null) {
+                    Activity mActivity = item.get();
+                    if (mActivity.equals(activity)) {
+                        if (isIncludeSelf) {
+                            finishActivity(mActivity, isLoadAnim);
+                            iterator.remove();
+                        }
+                        return true; //到当前页时结束循环
+                    } else {
                         finishActivity(mActivity, isLoadAnim);
-                        ActivityCollector.INSTANCE.remove(activityWeakReference);
+                        iterator.remove();
                     }
-                    return true; //到当前页时结束循环
-                } else {
-                    finishActivity(mActivity, isLoadAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
-        }
+        } while (iterator.hasPrevious());
         return false;
     }
 
@@ -1692,22 +1705,29 @@ public final class ActivityUtil {
                                            @AnimRes final int enterAnim,
                                            @AnimRes final int exitAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return false;
-        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
-            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
-                if (mActivity.equals(activity)) {
-                    if (isIncludeSelf) {
+        // 获取该列表的逆向迭代器
+        ListIterator<WeakReference<Activity>> iterator = getActivityList().listIterator(ActivityCollector.INSTANCE.size());
+        // 使用 do...while 循环进行倒序遍历
+        do {
+            // 判断是否存在前一个元素
+            if (iterator.hasPrevious()) {
+                // 获取并移动到前一个元素
+                WeakReference<Activity> item = iterator.previous();
+                if (item.get() != null) {
+                    Activity mActivity = item.get();
+                    if (mActivity.equals(activity)) {
+                        if (isIncludeSelf) {
+                            finishActivity(mActivity, enterAnim, exitAnim);
+                            iterator.remove();
+                        }
+                        return true; //到当前页时结束循环
+                    } else {
                         finishActivity(mActivity, enterAnim, exitAnim);
-                        ActivityCollector.INSTANCE.remove(activityWeakReference);
+                        iterator.remove();
                     }
-                    return true; //到当前页时结束循环
-                } else {
-                    finishActivity(mActivity, enterAnim, exitAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
-        }
+        } while (iterator.hasPrevious());
         return false;
     }
 
@@ -1733,22 +1753,29 @@ public final class ActivityUtil {
                                            final boolean isIncludeSelf,
                                            final boolean isLoadAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return false;
-        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
-            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
-                if (mActivity.getClass().equals(clz)) {
-                    if (isIncludeSelf) {
+        // 获取该列表的逆向迭代器
+        ListIterator<WeakReference<Activity>> iterator = getActivityList().listIterator(ActivityCollector.INSTANCE.size());
+        // 使用 do...while 循环进行倒序遍历
+        do {
+            // 判断是否存在前一个元素
+            if (iterator.hasPrevious()) {
+                // 获取并移动到前一个元素
+                WeakReference<Activity> item = iterator.previous();
+                if (item.get() != null) {
+                    Activity mActivity = item.get();
+                    if (mActivity.getClass().equals(clz)) {
+                        if (isIncludeSelf) {
+                            finishActivity(mActivity, isLoadAnim);
+                            iterator.remove();
+                        }
+                        return true; //到当前页时结束循环
+                    } else {
                         finishActivity(mActivity, isLoadAnim);
-                        ActivityCollector.INSTANCE.remove(activityWeakReference);
+                        iterator.remove();
                     }
-                    return true; //到当前页时结束循环
-                } else {
-                    finishActivity(mActivity, isLoadAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
-        }
+        } while (iterator.hasPrevious());
         return false;
     }
 
@@ -1767,22 +1794,29 @@ public final class ActivityUtil {
                                            @AnimRes final int enterAnim,
                                            @AnimRes final int exitAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return false;
-        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
-            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
-                if (mActivity.getClass().equals(clz)) {
-                    if (isIncludeSelf) {
+        // 获取该列表的逆向迭代器
+        ListIterator<WeakReference<Activity>> iterator = getActivityList().listIterator(ActivityCollector.INSTANCE.size());
+        // 使用 do...while 循环进行倒序遍历
+        do {
+            // 判断是否存在前一个元素
+            if (iterator.hasPrevious()) {
+                // 获取并移动到前一个元素
+                WeakReference<Activity> item = iterator.previous();
+                if (item.get() != null) {
+                    Activity mActivity = item.get();
+                    if (mActivity.getClass().equals(clz)) {
+                        if (isIncludeSelf) {
+                            finishActivity(mActivity, enterAnim, exitAnim);
+                            iterator.remove();
+                        }
+                        return true; //到当前页时结束循环
+                    } else {
                         finishActivity(mActivity, enterAnim, exitAnim);
-                        ActivityCollector.INSTANCE.remove(activityWeakReference);
+                        iterator.remove();
                     }
-                    return true; //到当前页时结束循环
-                } else {
-                    finishActivity(mActivity, enterAnim, exitAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
                 }
             }
-        }
+        } while (iterator.hasPrevious());
         return false;
     }
 
@@ -1806,15 +1840,17 @@ public final class ActivityUtil {
     public static void finishOtherActivities(@NonNull final Class<? extends Activity> clz,
                                              final boolean isLoadAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
+        Iterator<WeakReference<Activity>> iterator = getActivityList().iterator();
+        do {
+            WeakReference<Activity> item = iterator.next();
+            if (item.get() != null) {
+                Activity mActivity = item.get();
                 if (!mActivity.getClass().equals(clz)) {
                     finishActivity(mActivity, isLoadAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
+                    iterator.remove();
                 }
             }
-        }
+        } while (iterator.hasNext());
     }
 
     /**
@@ -1830,23 +1866,25 @@ public final class ActivityUtil {
                                              @AnimRes final int enterAnim,
                                              @AnimRes final int exitAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
+        Iterator<WeakReference<Activity>> iterator = getActivityList().iterator();
+        do {
+            WeakReference<Activity> item = iterator.next();
+            if (item.get() != null) {
+                Activity mActivity = item.get();
                 if (!mActivity.getClass().equals(clz)) {
                     finishActivity(mActivity, enterAnim, exitAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
+                    iterator.remove();
                 }
             }
-        }
+        } while (iterator.hasNext());
     }
 
     /**
      * Finish all of activities.
      */
     public static void finishAllActivities() {
-//        ActivityCollector.INSTANCE.finishAll();
-        finishAllActivities(false);
+        ActivityCollector.INSTANCE.finishAll();
+//        finishAllActivities(false);
     }
 
     /**
@@ -1856,7 +1894,7 @@ public final class ActivityUtil {
      */
     public static void finishAllActivities(final boolean isLoadAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
+        for (final WeakReference<Activity> activityWeakReference : getActivityList()) {
             if (activityWeakReference.get() != null) {
                 Activity mActivity = activityWeakReference.get();
                 // sActivityList remove the index activity at onActivityDestroyed
@@ -1864,9 +1902,9 @@ public final class ActivityUtil {
                 if (!isLoadAnim) {
                     mActivity.overridePendingTransition(0, 0);
                 }
-                ActivityCollector.INSTANCE.remove(activityWeakReference);
             }
         }
+        getActivityList().clear();
     }
 
     /**
@@ -1880,15 +1918,15 @@ public final class ActivityUtil {
     public static void finishAllActivities(@AnimRes final int enterAnim,
                                            @AnimRes final int exitAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
+        for (final WeakReference<Activity> activityWeakReference : getActivityList()) {
             if (activityWeakReference.get() != null) {
                 Activity mActivity = activityWeakReference.get();
                 // sActivityList remove the index activity at onActivityDestroyed
                 mActivity.finish();
                 mActivity.overridePendingTransition(enterAnim, exitAnim);
-                ActivityCollector.INSTANCE.remove(activityWeakReference);
             }
         }
+        getActivityList().clear();
     }
 
     /**
@@ -1906,16 +1944,26 @@ public final class ActivityUtil {
      */
     public static void finishAllActivitiesExceptNewest(final boolean isLoadAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
-                Activity topActivity = getTopActivity();
-                if (topActivity != null && !mActivity.equals(topActivity)) {
+        // 获取该列表的逆向迭代器
+        ListIterator<WeakReference<Activity>> iterator = getActivityList().listIterator(ActivityCollector.INSTANCE.size() - 1); //保留最后一个
+        // 使用 do...while 循环进行倒序遍历
+        do {
+            // 判断是否存在前一个元素
+            if (iterator.hasPrevious()) {
+                // 获取并移动到前一个元素
+                WeakReference<Activity> item = iterator.previous();
+                if (item.get() != null) {
+                    Activity mActivity = item.get();
                     finishActivity(mActivity, isLoadAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
+                    iterator.remove();
                 }
             }
-        }
+        } while (iterator.hasPrevious());
+
+
+//        Activity topActivity = getTopActivity();
+//        if (topActivity != null)
+//        finishOtherActivities(topActivity.getClass(), false);
     }
 
     /**
@@ -1929,16 +1977,21 @@ public final class ActivityUtil {
     public static void finishAllActivitiesExceptNewest(@AnimRes final int enterAnim,
                                                        @AnimRes final int exitAnim) {
         if (ActivityCollector.INSTANCE.size() == 0) return;
-        for (final WeakReference<Activity> activityWeakReference : ActivityCollector.INSTANCE.getActivityList()) {
-            if (activityWeakReference.get() != null) {
-                Activity mActivity = activityWeakReference.get();
-                Activity topActivity = getTopActivity();
-                if (topActivity != null && !mActivity.equals(topActivity)) {
+        // 获取该列表的逆向迭代器
+        ListIterator<WeakReference<Activity>> iterator = getActivityList().listIterator(ActivityCollector.INSTANCE.size() - 1); //保留最后一个
+        // 使用 do...while 循环进行倒序遍历
+        do {
+            // 判断是否存在前一个元素
+            if (iterator.hasPrevious()) {
+                // 获取并移动到前一个元素
+                WeakReference<Activity> item = iterator.previous();
+                if (item.get() != null) {
+                    Activity mActivity = item.get();
                     finishActivity(mActivity, enterAnim, exitAnim);
-                    ActivityCollector.INSTANCE.remove(activityWeakReference);
+                    iterator.remove();
                 }
             }
-        }
+        } while (iterator.hasPrevious());
     }
 
     /**
@@ -1975,6 +2028,7 @@ public final class ActivityUtil {
         try {
             return pm.getActivityIcon(activityName);
         } catch (PackageManager.NameNotFoundException e) {
+            LogUtil.e("ActivityUtils", "err: " + e.getMessage());
             e.printStackTrace();
             return null;
         }

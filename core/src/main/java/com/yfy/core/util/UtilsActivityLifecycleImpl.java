@@ -71,17 +71,24 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
 
     Activity getTopActivity() {
         if (ActivityCollector.INSTANCE.size() == 0) return null;
-        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
-            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
-                if (activityWeakReference.get() != null) {
-                    Activity activity = activityWeakReference.get();
-                    if (!ScreenUtils.isActivityAlive(activity)) { //未活跃状态的跳过
-                        continue;
-                    }
-                    return activity;
-                }
+        final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().getLast();
+        if (activityWeakReference.get() != null) {
+            return activityWeakReference.get();
+        } else {
+            return null;
         }
-        return null;
+
+//        for (int i = ActivityCollector.INSTANCE.getActivityList().size() - 1; i >= 0; i--) { //从活动栈的栈顶开始遍历
+//            final WeakReference<Activity> activityWeakReference = ActivityCollector.INSTANCE.getActivityList().get(i);
+//                if (activityWeakReference.get() != null) {
+//                    Activity activity = activityWeakReference.get();
+//                    if (!ScreenUtils.isActivityAlive(activity)) { //未活跃状态的跳过
+//                        continue;
+//                    }
+//                    return activity;
+//                }
+//        }
+//        return null;
     }
 
     void addOnAppStatusChangedListener(final Util.OnAppStatusChangedListener listener) {
@@ -172,7 +179,7 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
 
     Application getApplicationByReflect() {
         try {
-            Class activityThreadClass = Class.forName("android.app.ActivityThread");
+            @SuppressLint("PrivateApi") Class activityThreadClass = Class.forName("android.app.ActivityThread");
             Object thread = getActivityThread();
             if (thread == null) return null;
             Object app = activityThreadClass.getMethod("getApplication").invoke(thread);
@@ -360,6 +367,9 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
         }
     }
 
+    /**
+     * 设置栈顶活动页
+     */
     private void setTopActivity(final Activity activity) {
         LinkedList<WeakReference<Activity>> activityList = ActivityCollector.INSTANCE.getActivityList();
         if (activityList.size() <= 1) return;
@@ -375,14 +385,16 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
             }
         }
         if (containActivity) {
-            if (activityList.getFirst() != null && activityList.getFirst().get() != null && !activityList.getFirst().get().equals(activity)) {
-                activityList.remove(activityWeakRef);
-                WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
-                activityList.addFirst(weakRefActivity);
+            if (activityList.getLast() != null && activityList.getLast().get() != null) {
+               if (!activityList.getLast().get().equals(activity)) { //栈顶不是当前页
+                   activityList.remove(activityWeakRef); //先移除栈里原来位置的当前页
+                   WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
+                   activityList.addLast(weakRefActivity);
+               }
             }
         } else {
             WeakReference<Activity> weakRefActivity = new WeakReference<>(activity);
-            activityList.addFirst(weakRefActivity);
+            activityList.addLast(weakRefActivity);
         }
     }
 
@@ -429,9 +441,10 @@ public class UtilsActivityLifecycleImpl implements Application.ActivityLifecycle
             float sDurationScale = (Float) sDurationScaleField.get(null);
             if (sDurationScale == 0f) {
                 sDurationScaleField.set(null, 1f);
-                Log.i("UtilsActivityLifecycle", "setAnimatorsEnabled: Animators are enabled now!");
+                LogUtil.i("UtilsActivityLifecycle", "setAnimatorsEnabled: Animators are enabled now!");
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
+            LogUtil.e("UtilsActivityLifecycle", "setAnimatorsEnabled: err: " + e.getMessage());
             e.printStackTrace();
         }
     }

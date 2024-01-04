@@ -21,6 +21,7 @@ import com.yfy.play.base.dealer.Handler
 import com.yfy.play.base.util.PermissionUtil
 import com.yfy.play.base.util.clickTrigger
 import com.yfy.play.databinding.ActivityLoginBinding
+import com.yfy.play.main.MainActivity
 import com.yfy.play.main.login.bean.Account
 import com.yfy.play.main.login.bean.LoginState
 import dagger.hilt.android.AndroidEntryPoint
@@ -153,7 +154,8 @@ class LoginActivity : BaseActivity() {
                 }
                 is LoginState.LoginSuccess -> {
                     toProgressVisible(false)
-                    finish()
+//                    finish()
+                    ActivityUtil.finishToActivity(MainActivity::class.java, true) //结束包括当前页在内的其他活动页，保留目标页MainAct
 //                    ActivityUtil.finishToActivity(this, true) //结束包括当前登录页在内的其他活动页
                 }
                 is LoginState.LoginError -> {
