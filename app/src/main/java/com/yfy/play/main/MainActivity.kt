@@ -29,6 +29,8 @@ class MainActivity : BaseActivity() {
             true -> binding.homeView?.init(supportFragmentManager, viewModel)
             false -> binding.homeLandView?.init(supportFragmentManager, viewModel)
         }
+        if (LogUtil.DEBUG_MODE)
+            initGcWatcher()
     }
 
     @SuppressLint("MissingSuperCall")

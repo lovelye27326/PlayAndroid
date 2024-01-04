@@ -35,8 +35,6 @@ class App : Application() {
     private fun initData() {
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             AndroidThreeTen.init(applicationContext) //使用三方库格式化日期
-            if (LogUtil.DEBUG_MODE)
-                initGcWatcher()
         }
     }
 

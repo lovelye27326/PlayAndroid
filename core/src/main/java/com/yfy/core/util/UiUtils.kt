@@ -9,10 +9,8 @@ import android.os.SystemClock
 import android.provider.MediaStore
 import android.view.View
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.annotation.IdRes
-import androidx.viewbinding.ViewBinding
 import com.google.gson.reflect.TypeToken
 import java.lang.ref.WeakReference
 import java.lang.reflect.Type
@@ -60,9 +58,13 @@ private class GcWatcher {
     protected fun finalize() {
         val now = SystemClock.uptimeMillis()
         val happenDuration = now - sLastGcTime
-        LogUtil.i("UiUtils", "happened gc!!！！！！！！!$now - $sLastGcTime = $happenDuration ms interval from last time")
+        LogUtil.i(
+            "UiUtils",
+            "happened gc!!！！！！！！!$now - $sLastGcTime = $happenDuration ms interval from last time"
+        )
         sLastGcTime = now
-        sGcWatcher = WeakReference(GcWatcher())
+        if (ActivityUtil.getActivityList().isNotEmpty())
+            sGcWatcher = WeakReference(GcWatcher())
     }
 }
 
@@ -76,9 +78,8 @@ val List<*>?.length: Int
     get() = this?.size ?: 0
 
 
-
-inline  fun <T> typeToken(): Type {
-    return object : TypeToken<T>(){}.type
+inline fun <T> typeToken(): Type {
+    return object : TypeToken<T>() {}.type
 }
 
 typealias  Action<T> = ((o: T?) -> Unit)?
@@ -100,12 +101,12 @@ var View.isVisible
         visibility = if (value) View.VISIBLE else View.GONE
     }
 
-fun View.hide(){
-    visibility=View.GONE
+fun View.hide() {
+    visibility = View.GONE
 }
 
-fun View.show(){
-    visibility=View.VISIBLE
+fun View.show() {
+    visibility = View.VISIBLE
 }
 
 var View.isInVisible
