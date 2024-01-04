@@ -154,8 +154,8 @@ class LoginActivity : BaseActivity() {
                 }
                 is LoginState.LoginSuccess -> {
                     toProgressVisible(false)
+                    ActivityUtil.finishToActivity(MainActivity::class.java, false) //结束包括当前页在内的其他活动页，保留目标页MainAct
 //                    finish()
-                    ActivityUtil.finishToActivity(MainActivity::class.java, true) //结束包括当前页在内的其他活动页，保留目标页MainAct
 //                    ActivityUtil.finishToActivity(this, true) //结束包括当前登录页在内的其他活动页
                 }
                 is LoginState.LoginError -> {
@@ -299,6 +299,10 @@ class LoginActivity : BaseActivity() {
         }
     }
 
+
+    override fun onBackPressed() {
+        ActivityUtil.finishToActivity(MainActivity::class.java, false)
+    }
 
     override fun onDestroy() {
         if (::watcher.isInitialed()) {

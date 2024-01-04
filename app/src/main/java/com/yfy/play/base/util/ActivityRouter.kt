@@ -2,6 +2,7 @@ package com.yfy.play.base.util
 
 import android.app.Activity
 import android.content.Context
+import com.yfy.core.util.ScreenUtils
 import com.yfy.core.util.startActivity
 import com.yfy.play.main.login.LoginActivity
 

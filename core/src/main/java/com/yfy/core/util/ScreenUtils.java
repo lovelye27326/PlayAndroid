@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.yfy.core.Play;
+import com.yfy.core.R;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -422,12 +423,22 @@ public class ScreenUtils {
                 }
             }
         } catch (Exception e) {
-            Log.e("UtilsActivityLifecycle", "getActivitiesByReflect: " + e.getMessage());
+            LogUtil.e("UtilsActivityLifecycle", "getActivitiesByReflect: " + e.getMessage());
         }
         if (topActivity != null) {
             list.addFirst(topActivity);
         }
         return list;
+    }
+
+    public static void showSliderActivityInAnim(Activity activity) {
+        activity.overridePendingTransition(R.anim.activity_slider_right_in_anim,
+                R.anim.activity_exit_anim);
+    }
+
+    public static void showSliderActivityExitAnim(Activity activity) {
+        activity.overridePendingTransition(R.anim.activity_exit_anim,
+                R.anim.activity_slider_right_out_anim);
     }
 
 }

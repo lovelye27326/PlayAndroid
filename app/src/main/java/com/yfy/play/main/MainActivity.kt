@@ -8,10 +8,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
-import com.yfy.core.util.isInitialed
-import com.yfy.core.util.releasableNotNull
-import com.yfy.core.util.release
-import com.yfy.core.util.showToast
+import com.yfy.core.util.*
 import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
 import com.yfy.play.databinding.ActivityMainBinding
@@ -44,24 +41,28 @@ class MainActivity : BaseActivity() {
         return binding.root
     }
 
+    // 用来计算返回键的点击间隔时间
     private var exitTime: Long = 0
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            exit()
-            return false
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    private fun exit() {
-        if (System.currentTimeMillis() - exitTime > 2000) {
+    override fun onBackPressed() {
+        if (System.currentTimeMillis() - exitTime > 3000) {
+            //弹出提示，可以有多种方式
             showToast(getString(R.string.exit_program))
             exitTime = System.currentTimeMillis()
         } else {
-            exitProcess(0)
+            ActivityUtil.exitApp()
+//            super.onBackPressed() //不用默认的方式
+            //返回桌面
+//            val i = Intent(Intent.ACTION_MAIN)
+//            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            i.addCategory(Intent.CATEGORY_HOME)
+//            startActivity(i)
+
+//            exitProcess(0)
+
         }
     }
+
 
     companion object {
         fun actionStart(context: Context) {

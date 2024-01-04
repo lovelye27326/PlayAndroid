@@ -2,6 +2,7 @@ package com.yfy.core.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -1557,8 +1558,9 @@ public final class ActivityUtil {
         activity.finish();
         if (!isLoadAnim) {
             activity.overridePendingTransition(0, 0);
+        } else {
+            ScreenUtils.showSliderActivityExitAnim(activity);
         }
-
 //        finishActivity(activity.getClass(), isLoadAnim);
     }
 
@@ -1607,6 +1609,8 @@ public final class ActivityUtil {
                     mActivity.finish();
                     if (!isLoadAnim) {
                         mActivity.overridePendingTransition(0, 0);
+                    } else {
+                        ScreenUtils.showSliderActivityExitAnim(mActivity);
                     }
                     iterator.remove();
                 }
@@ -1901,6 +1905,8 @@ public final class ActivityUtil {
                 mActivity.finish();
                 if (!isLoadAnim) {
                     mActivity.overridePendingTransition(0, 0);
+                } else {
+                    ScreenUtils.showSliderActivityExitAnim(mActivity);
                 }
             }
         }
@@ -2225,6 +2231,23 @@ public final class ActivityUtil {
             return topActivity == null ? Util.getApp() : topActivity;
         } else {
             return Util.getApp();
+        }
+    }
+
+    /**
+     * 退出应用程序
+     */
+    public static void exitApp() {
+        try {
+            finishAllActivities();
+            Context context = getTopActivityOrApp();
+            ActivityManager activityMgr =
+                    (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            activityMgr.killBackgroundProcesses(context.getPackageName());
+            //			System.exit(0);
+        } catch (Exception e) {
+            LogUtil.e("ActivityUtil", "err: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

@@ -51,6 +51,7 @@ import kotlin.reflect.jvm.isAccessible
 inline fun <reified T : Activity> Activity.startActivity() {
     val intent = Intent(this, T::class.java)
     startActivity(intent)
+    ScreenUtils.showSliderActivityInAnim(this) //入场、退场动画
 }
 
 //跳转
@@ -63,6 +64,7 @@ inline fun <reified T : Context> Context.startActivity() {
 inline fun <reified T : Activity> Activity.startActivityForResult(reqCode: Int) {
     val intent = Intent(this, T::class.java)
     startActivityForResult(intent, reqCode)
+    ScreenUtils.showSliderActivityInAnim(this) //入场、退场动画
 }
 
 //跳转
@@ -70,6 +72,7 @@ inline fun <reified T : Activity> Activity.startActivity(bundle: Bundle) {
     val intent = Intent(this, T::class.java)
     intent.putExtras(bundle)
     startActivity(intent)
+    ScreenUtils.showSliderActivityInAnim(this) //入场、退场动画
 }
 
 
@@ -78,6 +81,7 @@ inline fun <reified T : Activity> Activity.startActivityForResult(bundle: Bundle
     val intent = Intent(this, T::class.java)
     intent.putExtras(bundle)
     startActivityForResult(intent, reqCode)
+    ScreenUtils.showSliderActivityInAnim(this) //入场、退场动画
 }
 
 //跳转服务
@@ -340,10 +344,10 @@ fun <T> LiveData<T>.observeOnce(observer: Observer<T?>) {
 /**
  * 只观察一次
  * observe(owner, object: Observer<T?> {
-override fun onChanged(value: T?) {
-observer(value)
-removeObserver(this)
-}
+        override fun onChanged(value: T?) {
+        observer(value)
+        removeObserver(this)
+    }
 })
  *
  */

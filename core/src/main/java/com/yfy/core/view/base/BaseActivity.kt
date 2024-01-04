@@ -180,6 +180,14 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
     }
 
 
+
+    override fun onBackPressed() {
+        ActivityUtil.finishToActivity(this, true, true) //结束包括当前登录页在内的其他活动页
+//        finish()
+    }
+
+
+
     override fun onDestroy() {
         super.onDestroy()
         LogUtil.i("BaseActivity:onDestroy: $mTAG")
