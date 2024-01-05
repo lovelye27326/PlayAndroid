@@ -55,7 +55,7 @@ class HomeRepository @Inject constructor(
             val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
             val bannerBeanList = bannerBeanDao.getBannerBeanList()
             if (bannerBeanList.isNotEmpty() && downImageTime > 0 && System.currentTimeMillis() - downImageTime < ONE_DAY) {
-                Result.success(bannerBeanList)
+                Result.success(bannerBeanList) //还在有效期就直接返回
             } else {
                 val bannerResponseDeferred =
                     async { PlayAndroidNetwork.getBanner() } //异步
@@ -78,7 +78,7 @@ class HomeRepository @Inject constructor(
     }
 
     @SuppressLint("CheckResult")
-    private suspend fun insertBannerList(
+    suspend fun insertBannerList(
         bannerBeanDao: BannerBeanDao,
         bannerList: List<BannerBean>
     ) {

@@ -6,10 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import com.yfy.core.util.*
 import com.yfy.core.util.ScreenUtils.dp2px
+import com.yfy.model.room.PlayDatabase
 import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
+import com.yfy.play.base.util.PreferencesStorage
 import com.yfy.play.databinding.FragmentHomePageBinding
 import com.yfy.play.home.almanac.AlmanacActivity
 import com.yfy.play.home.search.SearchActivity
@@ -18,6 +21,9 @@ import com.yfy.play.main.login.bean.BannerState
 import com.youth.banner.indicator.CircleIndicator
 import com.youth.banner.transformer.ZoomOutPageTransformer
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomePageFragment : ArticleCollectBaseFragment() {
@@ -51,7 +57,9 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
 
-    //    private lateinit var bannerAdapter2: ImageAdapter
+    @Inject
+    lateinit var preferencesStorage: PreferencesStorage
+
     private lateinit var articleAdapter: ArticleAdapter
     private var page = 1
 
@@ -116,14 +124,14 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         }
 
 
-        viewModel.state.observe(this) {
-            when (it) {
+        viewModel.state.observe(this) { info ->
+            when (info) {
                 BannerState.Loading -> { //Loading是object声明的，不用is判断
                     startLoading() //判断弱网情况加载结束
                 }
                 is BannerState.Success -> {
                     loadFinished()
-                    val size = it.bannerList.size
+                    val size = info.bannerList.size
                     LogUtil.i("HomePageFrg", "List size: $size")
                     val main = activity as MainActivity
                     if (viewModel.bannerList.size > 0)
@@ -131,13 +139,13 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                     if (viewModel.bannerList2.size > 0)
                         viewModel.bannerList2.clear()
                     if (main.isPort) {
-                        viewModel.bannerList.addAll(it.bannerList)
+                        viewModel.bannerList.addAll(info.bannerList)
                     } else {
-                        for (index in it.bannerList.indices) { //横屏
+                        for (index in info.bannerList.indices) { //横屏
                             if (index / 2 == 0) {
-                                viewModel.bannerList.add(it.bannerList[index])
+                                viewModel.bannerList.add(info.bannerList[index])
                             } else {
-                                viewModel.bannerList2.add(it.bannerList[index])
+                                viewModel.bannerList2.add(info.bannerList[index])
                             }
                         }
                     }
@@ -148,15 +156,36 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                         binding.homeBanner.start()
                     }
                     binding.homeBanner.start() //开始轮播
+
+                    viewModel.viewModelScope.launch { //保存本地dataStore
+                        var downImageTime = 0L
+                        val isCondition: suspend (Long) -> Boolean = {
+                            downImageTime = it
+                            true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
+                        }
+                        preferencesStorage.getLongData(DOWN_IMAGE_TIME, 0L).first(isCondition)
+                        val bannerBeanDao =
+                            PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
+                                .bannerBeanDao()
+                        val bannerBeanList = bannerBeanDao.getBannerBeanList()
+                        if (bannerBeanList.isEmpty() || downImageTime == 0L || System.currentTimeMillis() - downImageTime >= ONE_DAY) {
+                            LogUtil.i("HomePageFrg", "put banner")
+                            preferencesStorage.putLongData(
+                                DOWN_IMAGE_TIME,
+                                System.currentTimeMillis()
+                            )
+                        }
+                    }
+
                 }
                 is BannerState.Error -> {
                     showLoadErrorView() //判断弱网情况加载结束
-                    LogUtil.i("HomePageFrg", "err: ${it.errStr}")
-                    if (it.errStr.contains("|")) {
-                        val toastStr = it.errStr.split("|")[0]
+                    LogUtil.i("HomePageFrg", "err: ${info.errStr}")
+                    if (info.errStr.contains("|")) {
+                        val toastStr = info.errStr.split("|")[0]
                         showToast(toastStr)
                     } else {
-                        showToast(it.errStr)
+                        showToast(info.errStr)
                     }
                 }
                 BannerState.Finished -> {
@@ -251,4 +280,5 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         fun newInstance() = HomePageFragment()
     }
 
+    //        private lateinit var bannerAdapter2: ImageAdapter
 }
