@@ -1,16 +1,15 @@
 package com.yfy.play.home
 
 import android.annotation.SuppressLint
-import android.os.Bundle
-import android.util.Log
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.yfy.core.util.*
+import com.yfy.core.util.ScreenUtils.dp2px
 import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
-import com.yfy.play.base.util.PermissionUtil
 import com.yfy.play.databinding.FragmentHomePageBinding
 import com.yfy.play.home.almanac.AlmanacActivity
 import com.yfy.play.home.search.SearchActivity
@@ -21,9 +20,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomePageFragment : ArticleCollectBaseFragment() {
-
     private val viewModel by viewModels<HomePageViewModel>()
     private var binding by releasableNotNull<FragmentHomePageBinding>()
+    private var isStarted: Boolean = false
 
     override fun getLayoutView(
         inflater: LayoutInflater,
@@ -34,21 +33,14 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.apply {
-            homeBanner.addBannerLifecycleObserver(viewLifecycleOwner)
-    //            homeBanner2.addBannerLifecycleObserver(viewLifecycleOwner)
-            homeBanner.setPageTransformer(ZoomOutPageTransformer())
-    //            homeBanner2.setPageTransformer(DepthPageTransformer())
-        }
-    }
 
     override fun onResume() {
         super.onResume()
         binding.apply {
-            homeBanner.start()
-    //            homeBanner2.start()
+            if (!isStarted && Validators[Int::class].validate(bannerAdapter.realCount)) {
+                isStarted = true
+                homeBanner.start()
+            }
         }
     }
 
@@ -74,14 +66,40 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                 SearchActivity.actionStart(requireContext())
                 activity?.overridePendingTransition(R.anim.search_push_in, R.anim.fake_anim)
             }
-            bannerAdapter = ImageAdapter(requireContext(), viewModel.bannerList)
-    //            bannerAdapter2 = ImageAdapter(requireContext(), viewModel.bannerList2)
-            homeBanner.adapter = bannerAdapter
-            homeBanner.setBannerRound(20f)
-            homeBanner.setIndicator(CircleIndicator(context)).start()
-    //            homeBanner2.adapter = bannerAdapter2
-    //            homeBanner2.setIndicator(CircleIndicator(context)).start()
-    //            homeBanner2.setBannerRound(20f)
+
+
+            homeBanner.apply {
+                // 添加生命周期管理，确保在适当的生命周期内开始和停止轮播
+                addBannerLifecycleObserver(viewLifecycleOwner) //注意避免重复监听
+                setPageTransformer(ZoomOutPageTransformer()) //setPageTransformer(DepthPageTransformer())
+
+                bannerAdapter = ImageAdapter(this@HomePageFragment)
+                adapter = bannerAdapter
+                setBannerRound(20f)
+                indicator = CircleIndicator(context) //.start()
+
+                isAutoLoop(true)
+
+                setIndicatorWidth(
+                    dp2px(
+                        requireActivity(),
+                        5f
+                    ), dp2px(
+                        requireActivity(),
+                        5f
+                    )
+                )
+                setIndicatorNormalColor(Color.parseColor("#FFFFFF"))
+                setIndicatorSelectedColor(Color.parseColor("#000000"))
+                setIndicatorSpace(
+                    dp2px(
+                        requireActivity(),
+                        6f
+                    )
+                )
+                setLoopTime(3000)
+            }
+
             homeToTopRecyclerView.setRecyclerViewLayoutManager(true)
             articleAdapter = ArticleAdapter(viewModel.articleList, true, this@HomePageFragment)
             homeToTopRecyclerView.onRefreshListener({
@@ -127,7 +145,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             if (main.isPort) {
                 viewModel.bannerList.addAll(it)
             } else {
-                for (index in it.indices) {
+                for (index in it.indices) { //横屏
                     if (index / 2 == 0) {
                         viewModel.bannerList.add(it[index])
                     } else {
@@ -135,8 +153,15 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                     }
                 }
             }
-            bannerAdapter.notifyDataSetChanged()
-//            bannerAdapter2.notifyDataSetChanged()
+
+            binding.homeBanner.setDatas(viewModel.bannerList)
+            if (!isStarted) {
+                isStarted = true
+                binding.homeBanner.start()
+            }
+            binding.homeBanner.start() //开始轮播
+
+//            bannerAdapter.notifyDataSetChanged()
         }
 
     }
@@ -148,8 +173,10 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     override fun onPause() {
         super.onPause()
         binding.apply {
-            homeBanner.stop()
-    //            homeBanner2.stop()
+            if (isStarted) {
+                isStarted = false
+                binding.homeBanner.stop()
+            }
         }
     }
 

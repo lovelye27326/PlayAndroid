@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import com.yfy.core.util.*
@@ -13,7 +12,6 @@ import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.R
 import com.yfy.play.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
@@ -27,7 +25,7 @@ class MainActivity : BaseActivity() {
         isPort = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
         when (isPort) {
             true -> binding.homeView?.init(supportFragmentManager, viewModel)
-            false -> binding.homeLandView?.init(supportFragmentManager, viewModel)
+            false -> binding.homeLandView?.init(supportFragmentManager, viewModel) //横屏
         }
         if (LogUtil.DEBUG_MODE)
             initGcWatcher()
@@ -75,6 +73,7 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         if (::binding.isInitialed()) {
+            binding.homeView?.destroy()
             ::binding.release()
         }
         super.onDestroy()

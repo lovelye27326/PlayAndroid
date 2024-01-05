@@ -6,6 +6,9 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.yfy.core.util.isInitialed
+import com.yfy.core.util.releasableNotNull
+import com.yfy.core.util.release
 import com.yfy.play.R
 import com.yfy.play.home.HomePageFragment
 import com.yfy.play.official.OfficialAccountsFragment
@@ -20,7 +23,7 @@ abstract class BaseHomeBottomTabWidget @JvmOverloads constructor(
 
     private var mFragmentManager: FragmentManager? = null
     private var mFragments: ArrayList<Fragment> = arrayListOf()
-    private lateinit var mViewModel: MainViewModel
+    private var mViewModel by releasableNotNull<MainViewModel>()
     private var currentFragment: Fragment? = null
 
     /**
@@ -46,6 +49,9 @@ abstract class BaseHomeBottomTabWidget @JvmOverloads constructor(
      * 销毁，避免内存泄漏
      */
     open fun destroy() {
+        if (::mViewModel.isInitialed()) {
+            ::mViewModel.release()
+        }
         mFragmentManager?.apply {
             if (!isDestroyed)
                 mFragmentManager = null

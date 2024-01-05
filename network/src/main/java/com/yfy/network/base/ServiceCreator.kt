@@ -23,7 +23,7 @@ object ServiceCreator {
     private const val READ_TIMEOUT = 10L
 
 
-    val okHttpClient: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    val okHttpClient: OkHttpClient by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { //LazyThreadSafetyMode.NONE
         OkHttpClient().newBuilder().apply {
             connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
