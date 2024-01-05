@@ -54,11 +54,11 @@ class OfficialRepository @Inject constructor(application: Application,
             val articleListForChapterId =
                 articleListDao.getArticleListForChapterId(OFFICIAL, query.cid)
             var downArticleTime = 0L
-            preferencesStorage.getLongData(DOWN_OFFICIAL_ARTICLE_TIME, System.currentTimeMillis()).first {
+            preferencesStorage.getLongData(DOWN_OFFICIAL_ARTICLE_TIME, 0L).first {
                 downArticleTime = it
                 true
             }
-            if (articleListForChapterId.isNotEmpty() && downArticleTime > 0 && downArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isRefresh) {
+            if (articleListForChapterId.isNotEmpty() && downArticleTime > 0 && System.currentTimeMillis() - downArticleTime < FOUR_HOUR && !query.isRefresh) {
                 Result.success(articleListForChapterId)
             } else {
                 val projectTree = PlayAndroidNetwork.getWxArticle(query.page, query.cid)

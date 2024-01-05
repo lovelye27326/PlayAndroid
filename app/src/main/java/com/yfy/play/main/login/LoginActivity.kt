@@ -168,7 +168,7 @@ class LoginActivity : BaseActivity() {
                         showToast(it.errStr)
                     }
                 }
-                LoginState.Finished -> { //Logging是object声明的，不用is判断
+                LoginState.Finished -> {
                     toProgressVisible(false)
                 }
                 else -> {}

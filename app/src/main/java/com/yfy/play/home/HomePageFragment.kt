@@ -14,6 +14,7 @@ import com.yfy.play.databinding.FragmentHomePageBinding
 import com.yfy.play.home.almanac.AlmanacActivity
 import com.yfy.play.home.search.SearchActivity
 import com.yfy.play.main.MainActivity
+import com.yfy.play.main.login.bean.BannerState
 import com.youth.banner.indicator.CircleIndicator
 import com.youth.banner.transformer.ZoomOutPageTransformer
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +24,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     private val viewModel by viewModels<HomePageViewModel>()
     private var binding by releasableNotNull<FragmentHomePageBinding>()
     private var isStarted: Boolean = false
+    private var bannerAdapter by releasableNotNull<ImageAdapter>()
 
     override fun getLayoutView(
         inflater: LayoutInflater,
@@ -48,7 +50,6 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         getArticleList(true)
     }
 
-    private lateinit var bannerAdapter: ImageAdapter
 
     //    private lateinit var bannerAdapter2: ImageAdapter
     private lateinit var articleAdapter: ArticleAdapter
@@ -113,11 +114,58 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             })
             homeToTopRecyclerView.setAdapter(articleAdapter)
         }
-    }
 
-    override fun initData() {
-        startLoading()
-        initBanner()
+
+        viewModel.state.observe(this) {
+            when (it) {
+                BannerState.Loading -> { //Loading是object声明的，不用is判断
+                    startLoading() //判断弱网情况加载结束
+                }
+                is BannerState.Success -> {
+                    loadFinished()
+                    val size = it.bannerList.size
+                    LogUtil.i("HomePageFrg", "List size: $size")
+                    val main = activity as MainActivity
+                    if (viewModel.bannerList.size > 0)
+                        viewModel.bannerList.clear()
+                    if (viewModel.bannerList2.size > 0)
+                        viewModel.bannerList2.clear()
+                    if (main.isPort) {
+                        viewModel.bannerList.addAll(it.bannerList)
+                    } else {
+                        for (index in it.bannerList.indices) { //横屏
+                            if (index / 2 == 0) {
+                                viewModel.bannerList.add(it.bannerList[index])
+                            } else {
+                                viewModel.bannerList2.add(it.bannerList[index])
+                            }
+                        }
+                    }
+
+                    binding.homeBanner.setDatas(viewModel.bannerList)
+                    if (!isStarted) {
+                        isStarted = true
+                        binding.homeBanner.start()
+                    }
+                    binding.homeBanner.start() //开始轮播
+                }
+                is BannerState.Error -> {
+                    showLoadErrorView() //判断弱网情况加载结束
+                    LogUtil.i("HomePageFrg", "err: ${it.errStr}")
+                    if (it.errStr.contains("|")) {
+                        val toastStr = it.errStr.split("|")[0]
+                        showToast(toastStr)
+                    } else {
+                        showToast(it.errStr)
+                    }
+                }
+                BannerState.Finished -> {
+                    loadFinished() //判断弱网情况加载结束
+                }
+                else -> {}
+            }
+        }
+
         setDataStatus(viewModel.articleLiveData, {
             if (viewModel.articleList.size > 0) loadFinished() //判断弱网情况下且已加载的articleList非空则显示加载结束
         }) {
@@ -127,6 +175,12 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             viewModel.articleList.addAll(it)
             articleAdapter.notifyItemInserted(it.size)
         }
+    }
+
+    override fun initData() {
+        viewModel.getBannerInfo()
+//        initBanner()
+        startLoading()
         getArticleList(false)
     }
 
@@ -181,10 +235,15 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
     override fun onDestroy() {
+        binding.homeBanner.viewPager2.adapter = null
+        if (::bannerAdapter.isInitialed()) {
+            bannerAdapter.clean()
+            ::bannerAdapter.release()
+        }
+        super.onDestroy()
         if (::binding.isInitialed()) {
             ::binding.release()
         }
-        super.onDestroy()
     }
 
     companion object {

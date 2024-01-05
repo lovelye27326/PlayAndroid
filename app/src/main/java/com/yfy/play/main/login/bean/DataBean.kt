@@ -2,6 +2,7 @@ package com.yfy.play.main.login.bean
 
 import com.yfy.core.util.bean.BaseBean
 import com.yfy.model.model.Login
+import com.yfy.model.room.entity.BannerBean
 
 /**
  * 登录
@@ -25,4 +26,11 @@ sealed class LoginState {
     data class LoginError(val errStr: String) : LoginState()
 }
 
+
+sealed class BannerState {
+    object Loading : BannerState()
+    object Finished : BannerState()
+    data class Success(val bannerList: List<BannerBean>) : BannerState()
+    data class Error(val errStr: String) : BannerState()
+}
 

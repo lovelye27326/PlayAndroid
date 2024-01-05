@@ -9,7 +9,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.yfy.core.util.DataStoreUtils
 import com.yfy.core.util.LogUtil
 import com.yfy.model.pojo.QueryHomeArticle
 import com.yfy.model.room.PlayDatabase
@@ -50,12 +49,12 @@ class HomeRepository @Inject constructor(
                 downImageTime = it
                 true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
             }
-            preferencesStorage.getLongData(DOWN_IMAGE_TIME, System.currentTimeMillis()).first(isCondition)
+            preferencesStorage.getLongData(DOWN_IMAGE_TIME, 0L).first(isCondition)
             val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
             LogUtil.i("HomeRepository", "downImageTime = $formatTime")
             val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
             val bannerBeanList = bannerBeanDao.getBannerBeanList()
-            if (bannerBeanList.isNotEmpty() && downImageTime > 0 && downImageTime - System.currentTimeMillis() < ONE_DAY) {
+            if (bannerBeanList.isNotEmpty() && downImageTime > 0 && System.currentTimeMillis() - downImageTime < ONE_DAY) {
                 Result.success(bannerBeanList)
             } else {
                 val bannerResponseDeferred =
@@ -170,7 +169,7 @@ class HomeRepository @Inject constructor(
                     downArticleTime = it
                     true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
                 }
-                preferencesStorage.getLongData(DOWN_ARTICLE_TIME, System.currentTimeMillis())
+                preferencesStorage.getLongData(DOWN_ARTICLE_TIME, 0L)
                     .first(isCondition)
                 val formatTime = TimeUtils.formatTimestampWithZone8(downArticleTime, "")
                 LogUtil.i("HomeRepository", "downArticleTime = $formatTime")
@@ -183,12 +182,12 @@ class HomeRepository @Inject constructor(
                     downTopArticleTime = it
                     true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
                 }
-                preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, System.currentTimeMillis())
+                preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, 0L)
                     .first(condition)
                 val formatTime2 = TimeUtils.formatTimestamp(downTopArticleTime, "")
                 LogUtil.i("HomeRepository", "downTopArticleTime = $formatTime2")
                 if (articleListTop.isNotEmpty() && downTopArticleTime > 0 &&
-                    downTopArticleTime - System.currentTimeMillis() < FOUR_HOUR && !query.isNetRefresh //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
+                    System.currentTimeMillis() - downTopArticleTime < FOUR_HOUR && !query.isNetRefresh //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
                 ) {
                     res.addAll(articleListTop)
                 } else {
@@ -213,7 +212,7 @@ class HomeRepository @Inject constructor(
                     }
                 }
                 //再获取一般文章，叠加一起
-                if (articleListHome.isNotEmpty() && downArticleTime > 0 && downArticleTime - System.currentTimeMillis() < FOUR_HOUR
+                if (articleListHome.isNotEmpty() && downArticleTime > 0 && System.currentTimeMillis() - downArticleTime < FOUR_HOUR
                     && !query.isNetRefresh
                 ) {
                     res.addAll(articleListHome)

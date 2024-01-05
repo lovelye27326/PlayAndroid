@@ -4,8 +4,10 @@ import com.yfy.core.util.LogUtil
 import com.yfy.model.model.BaseModel
 import com.yfy.model.model.Login
 import com.yfy.model.model.isSuccess
+import com.yfy.model.room.entity.BannerBean
 import com.yfy.network.action.RequestAction
 import com.yfy.network.exception.HandleException
+import com.yfy.network.service.HomePageService
 import com.yfy.network.service.LoginService
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.*
@@ -46,32 +48,51 @@ private const val TAG = "ScopeExt"
 
 
 @ActivityRetainedScoped
+class BannerUseCase @Inject constructor(
+    val getHomeBannerInfo: HomeBannerRepository
+)
+
+
+@ActivityRetainedScoped
 class LoginUseCase @Inject constructor(
     //UseCase的构造函数含单个仓库调用单个函数最佳
-    val getLoginInfo: GetLoginRepository,
+    val getLoginInfo: LoginRepository,
 )
 
 @ActivityRetainedScoped
 class RegisterUseCase @Inject constructor(
-    val getRegisterInfo: GetRegisterRepository
+    val getRegisterInfo: RegisterRepository
+)
+
+@ActivityRetainedScoped
+class HomeBannerUseCase @Inject constructor(
+    val getHomeBannerInfo: HomeBannerRepository
 )
 
 
 @ActivityRetainedScoped
-class GetLoginRepository @Inject constructor(private val service: LoginService) {
+class LoginRepository @Inject constructor(private val service: LoginService) {
     suspend operator fun invoke(username: String, password: String): BaseModel<Login> {
         return service.getLogin(username, password)
     }
 }
 
 @ActivityRetainedScoped
-class GetRegisterRepository @Inject constructor(private val service: LoginService) {
+class RegisterRepository @Inject constructor(private val service: LoginService) {
     suspend operator fun invoke(
         username: String,
         password: String,
         surePassword: String
     ): BaseModel<Login> {
         return service.getRegister(username, password, surePassword)
+    }
+}
+
+
+@ActivityRetainedScoped
+class HomeBannerRepository @Inject constructor(private val service: HomePageService) {
+    suspend operator fun invoke(): BaseModel<List<BannerBean>> {
+        return service.getBanner()
     }
 }
 

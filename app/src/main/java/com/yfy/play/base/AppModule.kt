@@ -3,10 +3,11 @@ package com.yfy.play.base
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.yfy.network.base.ServiceCreator
-import com.yfy.network.service.LoginService
 import com.yfy.core.util.GsonUtils
 import com.yfy.core.util.dataStore
+import com.yfy.network.base.ServiceCreator
+import com.yfy.network.service.HomePageService
+import com.yfy.network.service.LoginService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +31,7 @@ import javax.inject.Singleton
  * ----------------------------------------------------------------
  */
 @Module
-@InstallIn(SingletonComponent::class)
+@InstallIn(SingletonComponent::class) //@InstallIn: 这个注解用于@Module注解的类，指定这个模块安装在哪个Hilt组件中，还有DataModule用来注入dataStore
 object AppModule {
 
 //    @Inject
@@ -38,7 +39,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providerRetrofit(): Retrofit {
+    fun provideRetrofit(): Retrofit {
         return Retrofit.Builder().client(ServiceCreator.okHttpClient)
             .baseUrl(ServiceCreator.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(GsonUtils.getGson()))
@@ -48,43 +49,64 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun providerLoginService(retrofit: Retrofit): LoginService {  //通过函数参数传入retrofit
+    fun provideLoginService(retrofit: Retrofit): LoginService {  //通过函数参数传入retrofit
         return retrofit.create(LoginService::class.java)
     }
 
     @Singleton
     @Provides
-    fun providerGetLoginRepository(service: LoginService): GetLoginRepository { //通过函数参数传入service
-        return GetLoginRepository(service)
+    fun provideHomePageService(retrofit: Retrofit): HomePageService {  //通过函数参数传入retrofit
+        return retrofit.create(HomePageService::class.java)
     }
 
     @Singleton
     @Provides
-    fun providerRegisterRepository(service: LoginService): GetRegisterRepository {
-        return GetRegisterRepository(service)
+    fun provideLoginRepository(service: LoginService): LoginRepository { //通过函数参数传入service
+        return LoginRepository(service)
     }
 
     @Singleton
     @Provides
-    fun providerLoginUseCase(
-        getLoginRepository: GetLoginRepository,
+    fun provideRegisterRepository(service: LoginService): RegisterRepository {
+        return RegisterRepository(service)
+    }
+
+    @Singleton
+    @Provides
+    fun provideHomeBannerRepository(service: HomePageService): HomeBannerRepository {
+        return HomeBannerRepository(service)
+    }
+
+
+    @Singleton
+    @Provides
+    fun provideLoginUseCase(
+        loginRepository: LoginRepository,
     ): LoginUseCase {
-        return LoginUseCase(getLoginRepository)
+        return LoginUseCase(loginRepository)
     }
 
 
     @Singleton
     @Provides
-    fun providerRegisterUseCase(
-        getRegisterRepository: GetRegisterRepository
+    fun provideRegisterUseCase(
+        registerRepository: RegisterRepository
     ): RegisterUseCase {
-        return RegisterUseCase(getRegisterRepository)
+        return RegisterUseCase(registerRepository)
+    }
+
+    @Singleton
+    @Provides
+    fun provideHomeBannerUseCase(
+        homeBannerRepository: HomeBannerRepository,
+    ): HomeBannerUseCase {
+        return HomeBannerUseCase(homeBannerRepository)
     }
 
 
     @Singleton
     @Provides
-    fun providerDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.dataStore //提供DataStore
     }
 
