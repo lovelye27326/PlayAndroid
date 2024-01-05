@@ -16,7 +16,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class OfficialAccountsFragment : BaseTabFragment() {
-
     private val viewModel by viewModels<OfficialViewModel>()
     private var binding: FragmentOfficialAccountsBinding? = null
 

@@ -2225,7 +2225,7 @@ public final class ActivityUtil {
         return ActivityOptionsCompat.makeSceneTransitionAnimation(activity, pairs).toBundle();
     }
 
-    private static Context getTopActivityOrApp() {
+    public static Context getTopActivityOrApp() {
         if (Util.isAppForeground()) {
             Activity topActivity = getTopActivity();
             return topActivity == null ? Util.getApp() : topActivity;
