@@ -54,7 +54,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
     override fun refreshData() {
-        getArticleList(true)
+//        getArticleList(true) //避免重复请求
     }
 
 
