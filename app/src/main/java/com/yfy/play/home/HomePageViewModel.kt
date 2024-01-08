@@ -3,7 +3,6 @@ package com.yfy.play.home
 import android.annotation.SuppressLint
 import android.app.Application
 import androidx.lifecycle.*
-import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.DataSource
@@ -120,21 +119,24 @@ class HomePageViewModel @Inject constructor(
         }
         preferencesStorage.getLongData(DOWN_IMAGE_TIME, 0L).first(isCondition)
         val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
-        LogUtil.i("HomePageViewModel", "downImageFormatTime = $formatTime, downImageTime = $downImageTime")
+        LogUtil.i(
+            "HomePageViewModel",
+            "downImageFormatTime = $formatTime, downImageTime = $downImageTime"
+        )
         val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
         val bannerBeanList = bannerBeanDao.getBannerBeanList()
-        if (bannerBeanList.isNotEmpty() && downImageTime > 0) {
+        return if (bannerBeanList.isNotEmpty() && downImageTime > 0) {
             LogUtil.i("HomePageViewModel", "downFromDataStore")
             if (System.currentTimeMillis() - downImageTime < ONE_DAY) {
-                return BaseModel(bannerBeanList, 0, "") //还在有效期ONE_DAY内就直接返回
+                BaseModel(bannerBeanList, 0, "") //还在有效期ONE_DAY内就直接返回
             } else { //超过一天有效期，
-                if (bannerBeanList[0].url == bannerList[0].url) { //数据库本地list数据头条（index = 0）非空且和api返回的头条一致
-                    return BaseModel(bannerBeanList, 0, "") //也直接返回
-                }
+                LogUtil.i("HomePageViewModel", "downFromNet")
+                homeBannerUseCase.getHomeBannerInfo()
             }
+        } else {
+            LogUtil.i("HomePageViewModel", "downFromNet")
+            homeBannerUseCase.getHomeBannerInfo()
         }
-        LogUtil.i("HomePageViewModel", "downFromNet")
-        return homeBannerUseCase.getHomeBannerInfo()
     }
 
     @SuppressLint("CheckResult")
