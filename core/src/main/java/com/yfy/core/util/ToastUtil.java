@@ -49,7 +49,7 @@ import java.util.Objects;
 
 /**
  * <pre>
- *     author: Blankj
+ *     author: Blankj/Yfy
  *     blog  : http://blankj.com
  *     time  : 2016/09/29
  *     desc  : utils about toast

@@ -1,20 +1,35 @@
 package com.yfy.play.home
 
+import android.annotation.SuppressLint
 import android.app.Application
 import androidx.lifecycle.*
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.yfy.core.util.LogUtil
 import com.yfy.model.model.BaseModel
 import com.yfy.model.pojo.QueryHomeArticle
 import com.yfy.model.room.PlayDatabase
+import com.yfy.model.room.dao.BannerBeanDao
 import com.yfy.model.room.entity.Article
 import com.yfy.model.room.entity.BannerBean
+import com.yfy.network.GlideApp
 import com.yfy.play.base.HomeBannerUseCase
 import com.yfy.play.base.netRequest
 import com.yfy.play.base.util.PreferencesStorage
 import com.yfy.play.base.util.TimeUtils
 import com.yfy.play.main.login.bean.BannerState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -83,7 +98,7 @@ class HomePageViewModel @Inject constructor(
                 )
                 it?.let { data ->
                     _state.value = BannerState.Success(data)
-                }?: kotlin.run {
+                } ?: kotlin.run {
                     _state.value = BannerState.Error("null")
                 }
             }
@@ -105,14 +120,68 @@ class HomePageViewModel @Inject constructor(
         }
         preferencesStorage.getLongData(DOWN_IMAGE_TIME, 0L).first(isCondition)
         val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
-        LogUtil.i("HomePageViewModel", "downImageTime = $formatTime")
+        LogUtil.i("HomePageViewModel", "downImageFormatTime = $formatTime, downImageTime = $downImageTime")
         val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
         val bannerBeanList = bannerBeanDao.getBannerBeanList()
-        if (bannerBeanList.isNotEmpty() && downImageTime > 0 && System.currentTimeMillis() - downImageTime < ONE_DAY) {
-            return BaseModel(bannerBeanList, 0, "") //还在有效期就直接返回
+        if (bannerBeanList.isNotEmpty() && downImageTime > 0) {
+            LogUtil.i("HomePageViewModel", "downFromDataStore")
+            if (System.currentTimeMillis() - downImageTime < ONE_DAY) {
+                return BaseModel(bannerBeanList, 0, "") //还在有效期ONE_DAY内就直接返回
+            } else { //超过一天有效期，
+                if (bannerBeanList[0].url == bannerList[0].url) { //数据库本地list数据头条（index = 0）非空且和api返回的头条一致
+                    return BaseModel(bannerBeanList, 0, "") //也直接返回
+                }
+            }
         }
         LogUtil.i("HomePageViewModel", "downFromNet")
         return homeBannerUseCase.getHomeBannerInfo()
     }
+
+    @SuppressLint("CheckResult")
+    suspend fun insertBannerList(
+        bannerBeanDao: BannerBeanDao,
+        bannerList: List<BannerBean>
+    ) {
+        val uiScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        bannerList.forEach {
+            val mRequestManager: RequestManager = GlideApp.with(application)
+            val mRequestBuilder: RequestBuilder<File> = mRequestManager.downloadOnly()
+            mRequestBuilder.load(it.imagePath)
+            mRequestBuilder.listener(object : RequestListener<File> {
+                override fun onLoadFailed(
+                    e: GlideException?, model: Any?, target: Target<File>?, isFirstResource: Boolean
+                ): Boolean {
+                    LogUtil.e("HomePageViewModel", "insertBannerList onLoadFailed: ${e?.message}")
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: File?,
+                    model: Any?,
+                    target: Target<File>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    try {
+                        it.filePath = resource?.absolutePath ?: "" //预加载缓存的路径赋值给filePath字段
+                        uiScope.launch {
+                            if (it.filePath.isNotEmpty()) {
+                                bannerBeanDao.insert(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        LogUtil.e(
+                            "HomePageViewModel",
+                            "insertBannerList onResourceReady: ${e.message}"
+                        )
+                    }
+                    return false
+                }
+            })
+            mRequestBuilder.preload()
+        }
+    }
+
 
 }

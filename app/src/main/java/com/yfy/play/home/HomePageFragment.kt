@@ -13,6 +13,7 @@ import com.yfy.model.room.PlayDatabase
 import com.yfy.play.R
 import com.yfy.play.article.ArticleAdapter
 import com.yfy.play.base.util.PreferencesStorage
+import com.yfy.play.base.util.TimeUtils
 import com.yfy.play.databinding.FragmentHomePageBinding
 import com.yfy.play.home.almanac.AlmanacActivity
 import com.yfy.play.home.search.SearchActivity
@@ -149,8 +150,8 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                             }
                         }
                     }
-
-                    binding.homeBanner.setDatas(viewModel.bannerList)
+                    val bannerList = viewModel.bannerList
+                    binding.homeBanner.setDatas(bannerList)
                     if (!isStarted) {
                         isStarted = true
                         binding.homeBanner.start()
@@ -164,16 +165,32 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                             true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
                         }
                         preferencesStorage.getLongData(DOWN_IMAGE_TIME, 0L).first(isCondition)
+                        val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
+                        LogUtil.i("HomePageFrg", "downImageFormatTime = $formatTime, downImageTime = $downImageTime")
                         val bannerBeanDao =
                             PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
                                 .bannerBeanDao()
                         val bannerBeanList = bannerBeanDao.getBannerBeanList()
-                        if (bannerBeanList.isEmpty() || downImageTime == 0L || System.currentTimeMillis() - downImageTime >= ONE_DAY) {
-                            LogUtil.i("HomePageFrg", "put banner")
-                            preferencesStorage.putLongData(
-                                DOWN_IMAGE_TIME,
-                                System.currentTimeMillis()
-                            )
+                        if (downImageTime == 0L || System.currentTimeMillis() - downImageTime >= ONE_DAY) {
+                            if (bannerBeanList.isNotEmpty()) { //数据库本地list数据非空进行判断
+                                if (bannerBeanList[0].url != bannerList[0].url) { //数据库本地list数据第一天条（index = 0）和api返回的第一条的url字段一致
+                                    LogUtil.i("HomePageFrg", "dataBase not null, put banner")
+                                    preferencesStorage.putLongData(
+                                        DOWN_IMAGE_TIME,
+                                        System.currentTimeMillis()
+                                    )
+                                    bannerBeanDao.deleteAll()
+                                    viewModel.insertBannerList(bannerBeanDao, bannerList) //预加载图片和插入数据库
+                                }
+                            } else {
+                                LogUtil.i("HomePageFrg", "dataBase null, put banner")
+                                preferencesStorage.putLongData(
+                                    DOWN_IMAGE_TIME,
+                                    System.currentTimeMillis()
+                                )
+                                bannerBeanDao.deleteAll()
+                                viewModel.insertBannerList(bannerBeanDao, bannerList) //预加载图片和插入数据库
+                            }
                         }
                     }
 

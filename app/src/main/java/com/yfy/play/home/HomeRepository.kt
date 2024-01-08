@@ -63,7 +63,7 @@ class HomeRepository @Inject constructor(
                 if (bannerResponse.errorCode == 0) {
                     val bannerList = bannerResponse.data
                     preferencesStorage.putLongData(DOWN_IMAGE_TIME, System.currentTimeMillis())
-                    if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) { //数据库本地list数据头条非空且和api返回的头条一致
+                    if (bannerBeanList.isNotEmpty() && bannerBeanList[0].url == bannerList[0].url) { //数据库本地list数据头条（index = 0）非空且和api返回的头条一致
                         Result.success(bannerBeanList)
                     } else {
                         bannerBeanDao.deleteAll()

@@ -2,9 +2,7 @@ package com.yfy.play.home
 
 import androidx.fragment.app.Fragment
 import com.yfy.GlideUtils
-import com.yfy.core.util.ActivityUtil
-import com.yfy.core.util.checkNetworkAvailable
-import com.yfy.core.util.showToast
+import com.yfy.core.util.*
 import com.yfy.model.room.entity.BannerBean
 import com.yfy.play.R
 import com.yfy.play.article.ArticleActivity
@@ -17,6 +15,26 @@ import com.youth.banner.holder.BannerImageHolder
  *
  */
 open class ImageAdapter(private var fragment: Fragment?) : BannerImageAdapter<BannerBean>(null) {
+//    init { //在自定义的BannerViewHolder里才可以用init方法设点击事件，适配器这里设置会发生NPE
+//        // 设置轮播图的点击事件监听器
+//        viewHolder.imageView.setOnClickListener {
+//            if (!ActivityUtil.getTopActivityOrApp().checkNetworkAvailable()) {
+//                showToast(ActivityUtil.getTopActivityOrApp().getString(R.string.no_network))
+//                return@setOnClickListener
+//            }
+//            if (it.getTag(R.id.tag_pos_key) != null) {
+//                val titleUrl = it.getTag(R.id.tag_position_key) as String
+//                val title = titleUrl.split("|")[1]
+//                val url = titleUrl.split("|")[0]
+//                ArticleActivity.actionStart(
+//                    fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
+//                    title.trim(),
+//                    url
+//                )
+//            }
+//        }
+//    }
+
     override fun onBindView(
         holder: BannerImageHolder?,
         data: BannerBean?,
@@ -24,23 +42,34 @@ open class ImageAdapter(private var fragment: Fragment?) : BannerImageAdapter<Ba
         size: Int
     ) {
         holder?.imageView?.apply {
+            val localPath = data?.filePath.ifNullOrBlank { "" } //先判断本地缓存
+            val path =
+                if (Validators[String::class].validate(localPath)) localPath else data?.imagePath.ifNullOrBlank { "https://psstatic.cdn.bcebos.com/video/wiseindex/aa6eef91f8b5b1a33b454c401_1660835115000.png" }
             GlideUtils.loadImgFrg(
                 fragment,
-                data?.imagePath ?: "www.baidu.com",
+                path,
                 R.mipmap.default_banner,
                 this
             )
-            // 设置轮播图的点击事件监听器
-            setOnClickListener {
+            val url = data?.url.ifNullOrBlank { "https:\\www.baidu.com" }
+            val title = data?.title.ifNullOrBlank { " " }
+            setTag(R.id.tag_pos_key, "$url$title")
+
+            setOnClickListener { //点击事件
                 if (!ActivityUtil.getTopActivityOrApp().checkNetworkAvailable()) {
                     showToast(ActivityUtil.getTopActivityOrApp().getString(R.string.no_network))
                     return@setOnClickListener
                 }
-                ArticleActivity.actionStart(
-                    fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
-                    data?.title ?: "",
-                    data?.url ?: "www.baidu.com"
-                )
+                if (it.getTag(R.id.tag_pos_key) != null) {
+                    val titleUrl = it.getTag(R.id.tag_pos_key) as String
+                    val articleTitle = titleUrl.split("|")[1]
+                    val articleUrl = titleUrl.split("|")[0]
+                    ArticleActivity.actionStart(
+                        fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
+                        articleTitle.trim(),
+                        articleUrl
+                    )
+                }
             }
         }
     }
