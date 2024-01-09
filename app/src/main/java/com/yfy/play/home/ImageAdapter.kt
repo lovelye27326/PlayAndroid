@@ -51,20 +51,20 @@ open class ImageAdapter(private var fragment: Fragment?) : BannerImageAdapter<Ba
                 R.mipmap.default_banner,
                 this
             )
-            val url = data?.url.ifNullOrBlank { "https:\\www.baidu.com" }
-            val title = data?.title.ifNullOrBlank { "" }
+//            val url = data?.url.ifNullOrBlank { "https:\\www.baidu.com" }
+//            val title = data?.title.ifNullOrBlank { "" }
 
-            setOnClickListener { //点击事件
-                if (!ActivityUtil.getTopActivityOrApp().checkNetworkAvailable()) {
-                    showToast(ActivityUtil.getTopActivityOrApp().getString(R.string.no_network))
-                    return@setOnClickListener
-                }
-                ArticleActivity.actionStart(
-                    fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
-                    title,
-                    url
-                )
-            }
+//            setOnClickListener { //点击事件
+//                if (!ActivityUtil.getTopActivityOrApp().checkNetworkAvailable()) {
+//                    showToast(ActivityUtil.getTopActivityOrApp().getString(R.string.no_network))
+//                    return@setOnClickListener
+//                }
+//                ArticleActivity.actionStart(
+//                    fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
+//                    title,
+//                    url
+//                )
+//            }
         }
     }
 

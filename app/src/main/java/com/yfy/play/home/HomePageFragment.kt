@@ -10,7 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.yfy.core.util.*
 import com.yfy.core.util.ScreenUtils.dp2px
 import com.yfy.model.room.PlayDatabase
+import com.yfy.model.room.entity.BannerBean
 import com.yfy.play.R
+import com.yfy.play.article.ArticleActivity
 import com.yfy.play.article.ArticleAdapter
 import com.yfy.play.base.util.PreferencesStorage
 import com.yfy.play.base.util.TimeUtils
@@ -108,6 +110,17 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                     )
                 )
                 setLoopTime(3000)
+                // 设置轮播图的点击事件监听器，点了哪张图执行自定义逻辑
+                setOnBannerListener { data, _ ->
+                    val bannerData = data as BannerBean
+                    val url = bannerData.url.ifNullOrBlank { "https:\\www.baidu.com" }
+                    val title = bannerData.title.ifNullOrBlank { "百度" }
+                    ArticleActivity.actionStart(
+                        requireActivity(),
+                        title,
+                        url
+                    )
+                }
             }
 
             homeToTopRecyclerView.setRecyclerViewLayoutManager(true)
@@ -166,7 +179,10 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                         }
                         preferencesStorage.getLongData(DOWN_IMAGE_TIME, 0L).first(isCondition)
                         val formatTime = TimeUtils.formatTimestampWithZone8(downImageTime, "")
-                        LogUtil.i("HomePageFrg", "downImageFormatTime = $formatTime, downImageTime = $downImageTime")
+                        LogUtil.i(
+                            "HomePageFrg",
+                            "downImageFormatTime = $formatTime, downImageTime = $downImageTime"
+                        )
                         val bannerBeanDao =
                             PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
                                 .bannerBeanDao()
@@ -180,7 +196,10 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                                         System.currentTimeMillis()
                                     )
                                     bannerBeanDao.deleteAll()
-                                    viewModel.insertBannerList(bannerBeanDao, bannerList) //预加载图片和插入数据库
+                                    viewModel.insertBannerList(
+                                        bannerBeanDao,
+                                        bannerList
+                                    ) //预加载图片和插入数据库
                                 }
                             } else {
                                 LogUtil.i("HomePageFrg", "dataBase null, put banner")
