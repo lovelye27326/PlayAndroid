@@ -52,24 +52,18 @@ open class ImageAdapter(private var fragment: Fragment?) : BannerImageAdapter<Ba
                 this
             )
             val url = data?.url.ifNullOrBlank { "https:\\www.baidu.com" }
-            val title = data?.title.ifNullOrBlank { " " }
-            setTag(R.id.tag_pos_key, "$url$title")
+            val title = data?.title.ifNullOrBlank { "" }
 
             setOnClickListener { //点击事件
                 if (!ActivityUtil.getTopActivityOrApp().checkNetworkAvailable()) {
                     showToast(ActivityUtil.getTopActivityOrApp().getString(R.string.no_network))
                     return@setOnClickListener
                 }
-                if (it.getTag(R.id.tag_pos_key) != null) {
-                    val titleUrl = it.getTag(R.id.tag_pos_key) as String
-                    val articleTitle = titleUrl.split("|")[1]
-                    val articleUrl = titleUrl.split("|")[0]
-                    ArticleActivity.actionStart(
-                        fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
-                        articleTitle.trim(),
-                        articleUrl
-                    )
-                }
+                ArticleActivity.actionStart(
+                    fragment?.requireActivity() ?: ActivityUtil.getTopActivityOrApp(),
+                    title,
+                    url
+                )
             }
         }
     }
