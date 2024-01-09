@@ -173,7 +173,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                         val bannerBeanList = bannerBeanDao.getBannerBeanList()
                         if (downImageTime == 0L || System.currentTimeMillis() - downImageTime >= ONE_DAY) {
                             if (bannerBeanList.isNotEmpty()) { //数据库本地list数据非空进行判断
-                                if (bannerBeanList[0].url != bannerList[0].url) { //数据库本地list数据第一天条（index = 0）和api返回的第一条的url字段一致
+                                if (bannerBeanList[0].url != bannerList[0].url) { //数据库本地list数据第一条（index = 0）和api返回的第一条的url字段一致
                                     LogUtil.i("HomePageFrg", "dataBase not null, put banner")
                                     preferencesStorage.putLongData(
                                         DOWN_IMAGE_TIME,
