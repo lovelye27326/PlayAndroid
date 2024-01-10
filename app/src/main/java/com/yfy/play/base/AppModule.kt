@@ -77,6 +77,19 @@ object AppModule {
         return HomeBannerRepository(service)
     }
 
+    @Singleton
+    @Provides
+    fun provideHomeTopArticleListRepository(service: HomePageService): HomeTopArticleListRepository {
+        return HomeTopArticleListRepository(service)
+    }
+
+
+    @Singleton
+    @Provides
+    fun provideHomeCommonArticleListRepository(service: HomePageService): HomeCommonArticleListRepository {
+        return HomeCommonArticleListRepository(service)
+    }
+
 
     @Singleton
     @Provides
@@ -101,6 +114,24 @@ object AppModule {
         homeBannerRepository: HomeBannerRepository,
     ): HomeBannerUseCase {
         return HomeBannerUseCase(homeBannerRepository)
+    }
+
+
+    @Singleton
+    @Provides
+    fun provideHomeTopArticleListUseCase(
+        homeTopArticleListRepository: HomeTopArticleListRepository,
+    ): HomeTopArticleListUseCase {
+        return HomeTopArticleListUseCase(homeTopArticleListRepository)
+    }
+
+
+    @Singleton
+    @Provides
+    fun provideHomeCommonArticleListUseCase(
+        homeCommonArticleListRepository: HomeCommonArticleListRepository,
+    ): HomeCommonArticleListUseCase {
+        return HomeCommonArticleListUseCase(homeCommonArticleListRepository)
     }
 
 

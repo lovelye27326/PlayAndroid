@@ -174,8 +174,8 @@ class HomeRepository @Inject constructor(
                 val formatTime = TimeUtils.formatTimestampWithZone8(downArticleTime, "")
                 LogUtil.i("HomeRepository", "downArticleTime = $formatTime")
                 val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
-                val articleListHome = articleListDao.getArticleList(HOME)
-                val articleListTop = articleListDao.getTopArticleList(HOME_TOP)
+                val articleListHome = articleListDao.getArticleList(HOME) // 筛选数据库里一般文章
+                val articleListTop = articleListDao.getTopArticleList(HOME_TOP) //数据库热门文章
                 //先获取热门文章
                 var downTopArticleTime = 0L
                 val condition: suspend (Long) -> Boolean = {

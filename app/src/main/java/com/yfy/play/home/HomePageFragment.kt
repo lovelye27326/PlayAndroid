@@ -1,6 +1,5 @@
 package com.yfy.play.home
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -9,8 +8,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import com.yfy.core.util.*
 import com.yfy.core.util.ScreenUtils.dp2px
+import com.yfy.model.pojo.QueryHomeArticle
 import com.yfy.model.room.PlayDatabase
 import com.yfy.model.room.entity.BannerBean
+import com.yfy.model.room.entity.HOME
+import com.yfy.model.room.entity.HOME_TOP
 import com.yfy.play.R
 import com.yfy.play.article.ArticleActivity
 import com.yfy.play.article.ArticleAdapter
@@ -21,6 +23,8 @@ import com.yfy.play.home.almanac.AlmanacActivity
 import com.yfy.play.home.search.SearchActivity
 import com.yfy.play.main.MainActivity
 import com.yfy.play.main.login.bean.BannerState
+import com.yfy.play.main.login.bean.HomeCommonArticleState
+import com.yfy.play.main.login.bean.HomeTopArticleState
 import com.youth.banner.indicator.CircleIndicator
 import com.youth.banner.transformer.ZoomOutPageTransformer
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,6 +60,8 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
     override fun refreshData() {
+//        viewModel.getHomeTopArticleListInfo(QueryHomeArticle(page, true))
+
 //        getArticleList(true) //避免重复请求
     }
 
@@ -128,17 +134,25 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             homeToTopRecyclerView.onRefreshListener({
                 page = 1
                 LogUtil.i("HomePageFrg", "refresh page = $page")
-                getArticleList(true)
+                viewModel.getHomeTopArticleListInfo(
+                    QueryHomeArticle(
+                        page,
+                        true
+                    )
+                ) //头条文章API只用到QueryHomeArticle对象的isNetRefresh字段
+//                getArticleList(true)
             }, {
                 page++
                 LogUtil.i("HomePageFrg", "loadMore page = $page")
-                getArticleList(false)
+                //只加载一般文章
+                viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, false))
+//                getArticleList(false)
             })
             homeToTopRecyclerView.setAdapter(articleAdapter)
         }
 
 
-        viewModel.state.observe(this) { info ->
+        viewModel.bannerState.observe(this) { info ->
             when (info) {
                 BannerState.Loading -> { //Loading是object声明的，不用is判断
                     startLoading() //判断弱网情况加载结束
@@ -212,10 +226,9 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                             }
                         }
                     }
-
                 }
                 is BannerState.Error -> {
-                    showLoadErrorView() //判断弱网情况加载结束
+//                    showLoadErrorView() //判断弱网情况加载结束
                     LogUtil.i("HomePageFrg", "err: ${info.errStr}")
                     if (info.errStr.contains("|")) {
                         val toastStr = info.errStr.split("|")[0]
@@ -231,63 +244,194 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             }
         }
 
-        setDataStatus(viewModel.articleLiveData, {
-            if (viewModel.articleList.size > 0) loadFinished() //判断弱网情况下且已加载的articleList非空则显示加载结束
-        }) {
-            if (page == 1 && viewModel.articleList.size > 0) {
-                viewModel.articleList.clear()
+
+        viewModel.homeTopArticleState.observe(this) { info ->
+            when (info) {
+                HomeTopArticleState.Loading -> { //Loading是object声明的，不用is判断
+                    startLoading() //判断弱网情况加载结束
+                }
+                is HomeTopArticleState.Success -> {
+                    loadFinished()
+                    val size = info.articleList.size
+                    LogUtil.i("HomePageFrg", "topArticleList size: $size")
+                    if (viewModel.articleList.size > 0)
+                        viewModel.articleList.clear()
+                    val articleList = info.articleList
+                    viewModel.articleList.addAll(articleList)
+                    articleAdapter.notifyItemInserted(size)
+
+                    viewModel.viewModelScope.launch { //保存本地dataStore
+                        var downTopArticleTime = 0L
+                        val isCondition: suspend (Long) -> Boolean = {
+                            downTopArticleTime = it
+                            true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
+                        }
+                        preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, 0L).first(isCondition)
+                        val formatTime = TimeUtils.formatTimestampWithZone8(downTopArticleTime, "")
+                        LogUtil.i(
+                            "HomePageFrg",
+                            "downTopArticleFormatTime = $formatTime, downTopArticleTime = $downTopArticleTime"
+                        )
+
+                        val articleListDao =
+                            PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
+                                .browseHistoryDao()
+                        val articleListTop =
+                            articleListDao.getTopArticleList(HOME_TOP) //在数据库里筛选热门头条文章
+                        if (downTopArticleTime == 0L || System.currentTimeMillis() - downTopArticleTime >= FOUR_HOUR) {
+                            if (articleListTop.isNotEmpty()) { //数据库本地list数据非空进行判断
+                                if (articleListTop[0].link != articleList[0].link) { //数据库本地list数据第一条（index = 0）和api返回的第一条的url字段一致
+                                    LogUtil.i("HomePageFrg", "dataBase not null, put article")
+                                    preferencesStorage.putLongData(
+                                        DOWN_TOP_ARTICLE_TIME,
+                                        System.currentTimeMillis()
+                                    )
+
+                                    articleList.forEach {
+                                        it.localType = HOME_TOP //设置文章本地类型为头条
+                                    }
+                                    articleListDao.deleteAll(HOME_TOP)
+                                    articleListDao.insertList(articleList)
+                                }
+                            } else {
+                                LogUtil.i("HomePageFrg", "dataBase null, put article")
+                                preferencesStorage.putLongData(
+                                    DOWN_TOP_ARTICLE_TIME,
+                                    System.currentTimeMillis()
+                                )
+                                articleList.forEach {
+                                    it.localType = HOME_TOP
+                                }
+                                articleListDao.deleteAll(HOME_TOP)
+                                articleListDao.insertList(articleList) //插入数据库
+                            }
+                        }
+                    }
+
+                }
+                is HomeTopArticleState.Error -> {
+//                    showLoadErrorView() //判断弱网情况加载结束
+                    LogUtil.i("HomePageFrg", "err: ${info.errStr}")
+                    if (info.errStr.contains("|")) {
+                        val toastStr = info.errStr.split("|")[0]
+                        showToast(toastStr)
+                    } else {
+                        showToast(info.errStr)
+                    }
+                }
+                HomeTopArticleState.Finished -> {
+//                    loadFinished() //判断弱网情况加载结束
+                    //再加载一般文章
+                    viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, true))
+                }
+                else -> {}
             }
-            viewModel.articleList.addAll(it)
-            articleAdapter.notifyItemInserted(it.size)
         }
+
+
+        viewModel.homeCommonArticleState.observe(this) { info ->
+            when (info) {
+                HomeCommonArticleState.Loading -> { //Loading是object声明的，不用is判断
+                    startLoading() //判断弱网情况加载结束
+                }
+                is HomeCommonArticleState.Success -> {
+                    loadFinished()
+                    val size = info.articleList.size
+                    LogUtil.i("HomePageFrg", "articleList size: $size")
+                    val oldSize = viewModel.articleList.size
+                    val articleList = info.articleList
+                    viewModel.articleList.addAll(articleList)
+                    articleAdapter.notifyItemRangeChanged(
+                        oldSize,
+                        size
+                    )
+                    viewModel.viewModelScope.launch { //保存本地dataStore
+                        var downCommonArticleTime = 0L
+                        val isCondition: suspend (Long) -> Boolean = {
+                            downCommonArticleTime = it
+                            true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
+                        }
+                        preferencesStorage.getLongData(DOWN_ARTICLE_TIME, 0L).first(isCondition)
+                        val formatTime = TimeUtils.formatTimestampWithZone8(downCommonArticleTime, "")
+                        LogUtil.i(
+                            "HomePageFrg",
+                            "downCommonArticleFormatTime = $formatTime, downCommonArticleTime = $downCommonArticleTime"
+                        )
+
+                        val articleListDao =
+                            PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
+                                .browseHistoryDao()
+                        val articleListHome =
+                            articleListDao.getArticleList(HOME) //在数据库里筛选热门头条文章
+                        if (downCommonArticleTime == 0L || System.currentTimeMillis() - downCommonArticleTime >= FOUR_HOUR) {
+                            if (articleListHome.isNotEmpty()) { //数据库本地list数据非空进行判断
+                                if (articleListHome[0].link != articleList[0].link) { //数据库本地list数据第一条（index = 0）和api返回的第一条的url字段一致
+                                    LogUtil.i("HomePageFrg", "dataBase not null, put article")
+                                    preferencesStorage.putLongData(
+                                        DOWN_ARTICLE_TIME,
+                                        System.currentTimeMillis()
+                                    )
+
+                                    articleList.forEach {
+                                        it.localType = HOME //设置文章本地类型为头条
+                                    }
+                                    articleListDao.deleteAll(HOME)
+                                    articleListDao.insertList(articleList)
+                                }
+                            } else {
+                                LogUtil.i("HomePageFrg", "dataBase null, put article")
+                                preferencesStorage.putLongData(
+                                    DOWN_ARTICLE_TIME,
+                                    System.currentTimeMillis()
+                                )
+                                articleList.forEach {
+                                    it.localType = HOME
+                                }
+                                articleListDao.deleteAll(HOME)
+                                articleListDao.insertList(articleList) //插入数据库
+                            }
+                        }
+                    }
+
+                }
+                is HomeCommonArticleState.Error -> {
+                    showLoadErrorView() //判断弱网情况加载结束
+                    LogUtil.i("HomePageFrg", "err: ${info.errStr}")
+                    if (info.errStr.contains("|")) {
+                        val toastStr = info.errStr.split("|")[0]
+                        showToast(toastStr)
+                    } else {
+                        showToast(info.errStr)
+                    }
+                }
+                HomeCommonArticleState.Finished -> {
+                    loadFinished() //判断弱网情况加载结束
+                }
+                else -> {}
+            }
+        }
+
+
+//        setDataStatus(viewModel.articleLiveData, {
+//            if (viewModel.articleList.size > 0) loadFinished() //判断弱网情况下且已加载的articleList非空则显示加载结束
+//        }) {
+//            if (page == 1 && viewModel.articleList.size > 0) {
+//                viewModel.articleList.clear()
+//            }
+//            viewModel.articleList.addAll(it)
+//            articleAdapter.notifyItemInserted(it.size)
+//        }
     }
 
     override fun initData() {
-        viewModel.getBannerInfo()
+        viewModel.getHomeBannerInfo()
+        viewModel.getHomeTopArticleListInfo(QueryHomeArticle(page, false))
+
 //        initBanner()
-        startLoading()
-        getArticleList(false)
+//        startLoading()
+//        getArticleList(false)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun initBanner() {
-        setDataStatus(viewModel.getBanner(), {
-            if (viewModel.bannerList.size > 0) loadFinished() //判断弱网情况加载结束
-        }) {
-            val size = it.size
-            LogUtil.i("HomePageFrg", "List size: $size")
-            val main = activity as MainActivity
-            if (viewModel.bannerList.size > 0)
-                viewModel.bannerList.clear()
-            if (viewModel.bannerList2.size > 0)
-                viewModel.bannerList2.clear()
-            if (main.isPort) {
-                viewModel.bannerList.addAll(it)
-            } else {
-                for (index in it.indices) { //横屏
-                    if (index / 2 == 0) {
-                        viewModel.bannerList.add(it[index])
-                    } else {
-                        viewModel.bannerList2.add(it[index])
-                    }
-                }
-            }
-
-            binding.homeBanner.setDatas(viewModel.bannerList)
-            if (!isStarted) {
-                isStarted = true
-                binding.homeBanner.start()
-            }
-            binding.homeBanner.start() //开始轮播
-
-//            bannerAdapter.notifyDataSetChanged()
-        }
-
-    }
-
-    private fun getArticleList(isRefresh: Boolean) {
-        viewModel.getArticleList(page, isRefresh)
-    }
 
     override fun onPause() {
         super.onPause()
@@ -317,4 +461,44 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     }
 
     //        private lateinit var bannerAdapter2: ImageAdapter
+
+//    private fun getArticleList(isRefresh: Boolean) {
+//        viewModel.getArticleList(page, isRefresh)
+//    }
+
+
+//    @SuppressLint("NotifyDataSetChanged")
+//    private fun initBanner() {
+//        setDataStatus(viewModel.getBanner(), {
+//            if (viewModel.bannerList.size > 0) loadFinished() //判断弱网情况加载结束
+//        }) {
+//            val size = it.size
+//            LogUtil.i("HomePageFrg", "List size: $size")
+//            val main = activity as MainActivity
+//            if (viewModel.bannerList.size > 0)
+//                viewModel.bannerList.clear()
+//            if (viewModel.bannerList2.size > 0)
+//                viewModel.bannerList2.clear()
+//            if (main.isPort) {
+//                viewModel.bannerList.addAll(it)
+//            } else {
+//                for (index in it.indices) { //横屏
+//                    if (index / 2 == 0) {
+//                        viewModel.bannerList.add(it[index])
+//                    } else {
+//                        viewModel.bannerList2.add(it[index])
+//                    }
+//                }
+//            }
+//
+//            binding.homeBanner.setDatas(viewModel.bannerList)
+//            if (!isStarted) {
+//                isStarted = true
+//                binding.homeBanner.start()
+//            }
+//            binding.homeBanner.start() //开始轮播
+//
+////           bannerAdapter.notifyDataSetChanged()
+//        }
+//    }
 }

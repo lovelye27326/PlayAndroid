@@ -2,6 +2,7 @@ package com.yfy.play.main.login.bean
 
 import com.yfy.core.util.bean.BaseBean
 import com.yfy.model.model.Login
+import com.yfy.model.room.entity.Article
 import com.yfy.model.room.entity.BannerBean
 
 /**
@@ -34,3 +35,17 @@ sealed class BannerState {
     data class Error(val errStr: String) : BannerState()
 }
 
+sealed class HomeTopArticleState {
+    object Loading : HomeTopArticleState()
+    object Finished : HomeTopArticleState()
+    data class Success(val articleList: List<Article>) : HomeTopArticleState()
+    data class Error(val errStr: String) : HomeTopArticleState()
+}
+
+
+sealed class HomeCommonArticleState {
+    object Loading : HomeCommonArticleState()
+    object Finished : HomeCommonArticleState()
+    data class Success(val articleList: List<Article>) : HomeCommonArticleState()
+    data class Error(val errStr: String) : HomeCommonArticleState()
+}

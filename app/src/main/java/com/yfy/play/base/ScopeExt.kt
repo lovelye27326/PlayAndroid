@@ -1,9 +1,11 @@
 package com.yfy.play.base
 
 import com.yfy.core.util.LogUtil
+import com.yfy.model.model.ArticleList
 import com.yfy.model.model.BaseModel
 import com.yfy.model.model.Login
 import com.yfy.model.model.isSuccess
+import com.yfy.model.room.entity.Article
 import com.yfy.model.room.entity.BannerBean
 import com.yfy.network.action.RequestAction
 import com.yfy.network.exception.HandleException
@@ -27,10 +29,10 @@ fun <T> CoroutineScope.netRequest(block: RequestAction<T>.() -> Unit) {
                 action.success?.invoke(result!!.data)
             } else {
                 if (result != null) {
-                    LogUtil.i("ScopeExt", "result: $result")
+                    LogUtil.e("ScopeExt", "result: $result")
                     action.error?.invoke(result.errorMsg + "|" + result.errorCode)
                 } else {
-                    LogUtil.i("ScopeExt", "result: null")
+                    LogUtil.e("ScopeExt", "result: null")
                     action.error?.invoke("null|")
                 }
             }
@@ -45,13 +47,6 @@ fun <T> CoroutineScope.netRequest(block: RequestAction<T>.() -> Unit) {
 
 
 private const val TAG = "ScopeExt"
-
-
-@ActivityRetainedScoped
-class BannerUseCase @Inject constructor(
-    val getHomeBannerInfo: HomeBannerRepository
-)
-
 
 @ActivityRetainedScoped
 class LoginUseCase @Inject constructor(
@@ -69,6 +64,15 @@ class HomeBannerUseCase @Inject constructor(
     val getHomeBannerInfo: HomeBannerRepository
 )
 
+@ActivityRetainedScoped
+class HomeTopArticleListUseCase @Inject constructor(
+    val getHomeTopArticleListInfo: HomeTopArticleListRepository
+)
+
+@ActivityRetainedScoped
+class HomeCommonArticleListUseCase @Inject constructor(
+    val getHomeCommonArticleListInfo: HomeCommonArticleListRepository
+)
 
 @ActivityRetainedScoped
 class LoginRepository @Inject constructor(private val service: LoginService) {
@@ -97,6 +101,20 @@ class HomeBannerRepository @Inject constructor(private val service: HomePageServ
 }
 
 
+@ActivityRetainedScoped
+class HomeTopArticleListRepository @Inject constructor(private val service: HomePageService) {
+    suspend operator fun invoke(): BaseModel<List<Article>> {
+        return service.getTopArticle()
+    }
+}
+
+
+@ActivityRetainedScoped
+class HomeCommonArticleListRepository @Inject constructor(private val service: HomePageService) {
+    suspend operator fun invoke(page: Int): BaseModel<ArticleList> {
+        return service.getArticle(page)
+    }
+}
 
 //region 旧同步http加载状态，当前协程未指定调度线程，恢复挂起的数据仍在当前线程中
 
