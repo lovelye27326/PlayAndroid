@@ -44,6 +44,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowFullscreen">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">@drawable/img_welcome</item>
         <item name="android:windowTranslucentStatus">false</item>
@@ -62,4 +63,8 @@
         <item name="android:textSize">@dimen/sp_14</item>
     </style>
 
+    <style name="tabLayout_Text_color" parent="TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#6e6e6e</item>
+    </style>
 </resources>

@@ -8,6 +8,7 @@
 
     <!-- 灰白 -->
     <color name="grayWhite">#e9e5e5</color>
+    <color name="greyWhite">#EEEEEE </color>
     <!--黑色-->
     <!--筛选框-->
     <color name="icon_normal">#D1D1D1</color>
@@ -48,5 +49,7 @@
     <color name="home_bottom_mask_end">#F7F7F7</color>
 
     <color name="profile_icon">#000000</color>
+
+    <color name="text_blue">#2662F0</color>
 
 </resources>

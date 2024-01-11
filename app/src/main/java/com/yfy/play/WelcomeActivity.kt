@@ -21,7 +21,7 @@ class WelcomeActivity : AppCompatActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        BarUtil.setStatusBarLightMode(this, true)
+//        BarUtil.setStatusBarLightMode(this, true)
         //处理首次安装点击打开切到后台,点击桌面图标再回来重启的问题及通过应用宝唤起在特定条件下重走逻辑的问题
         if (intent.flags and Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT != 0) {
             // Activity was brought to front and not created,

@@ -5,12 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".WelcomeActivity">
-<ImageView
-    android:id="@+id/ivWelcomeBg"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:scaleType="centerCrop"
-    android:src="@drawable/img_welcome"
-    android:contentDescription="@string/app_name" />
+
+    <ImageView
+        android:id="@+id/ivWelcomeBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/app_name"
+        android:orientation="horizontal"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_welcome" />
 </LinearLayout>

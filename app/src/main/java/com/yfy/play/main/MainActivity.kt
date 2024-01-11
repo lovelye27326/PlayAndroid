@@ -15,10 +15,20 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
+//    override val isFullScreen: Boolean
+//        get() = true
 
     private var binding by releasableNotNull<ActivityMainBinding>()
     private val viewModel by viewModels<MainViewModel>()
     var isPort = true //是否竖直
+
+
+
+    override fun initWindow() {
+        window.setBackgroundDrawable(null) //去掉WelcomeActivity页的Bitmap引用
+        super.initWindow()
+    }
+
 
     override fun initView() {
         mTAG = "MainAct"
@@ -27,9 +37,11 @@ class MainActivity : BaseActivity() {
             true -> binding.homeView?.init(supportFragmentManager, viewModel)
             false -> binding.homeLandView?.init(supportFragmentManager, viewModel) //横屏
         }
-        if (LogUtil.DEBUG_MODE)
-            initGcWatcher()
+//        if (LogUtil.DEBUG_MODE)
+//            initGcWatcher()
     }
+
+
 
     @SuppressLint("MissingSuperCall")
     override fun onSaveInstanceState(outState: Bundle) {
