@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_45"
         android:background="@color/colorPrimary"
-        android:fitsSystemWindows="true"
         android:orientation="vertical">
 
         <ImageView

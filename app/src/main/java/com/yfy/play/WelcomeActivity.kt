@@ -1,24 +1,39 @@
 package com.yfy.play
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.view.animation.*
+import androidx.appcompat.app.AppCompatActivity
+import com.yfy.core.util.BarUtil
 import com.yfy.core.util.showShortToast
-import com.yfy.core.view.base.BaseActivity
 import com.yfy.play.databinding.ActivityWelcomeBinding
 import com.yfy.play.main.MainActivity
 
-class WelcomeActivity : BaseActivity(),
+class WelcomeActivity : AppCompatActivity(),
     View.OnClickListener {
-    override val isFullScreen: Boolean
-        get() = true
 
     private lateinit var binding: ActivityWelcomeBinding
     private var exitTime: Long = 0
     private var animationTime: Long = 500
 
-    override fun getLayoutView(): View {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        BarUtil.setStatusBarLightMode(this, true)
+        //处理首次安装点击打开切到后台,点击桌面图标再回来重启的问题及通过应用宝唤起在特定条件下重走逻辑的问题
+        if (intent.flags and Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT != 0) {
+            // Activity was brought to front and not created,
+            // Thus finishing this will get us to the last viewed activity
+            finish()
+            return
+        }
+        setContentView(getLayoutView())
+        initView()
+    }
+
+    private fun getLayoutView(): View {
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -50,7 +65,7 @@ class WelcomeActivity : BaseActivity(),
 
 
     @SuppressLint("SetTextI18n")
-    override fun initView() {
+    fun initView() {
         initAnimation()
         binding.ivWelcomeBg.setOnClickListener(this)
     }
