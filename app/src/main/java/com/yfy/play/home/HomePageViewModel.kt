@@ -152,8 +152,8 @@ class HomePageViewModel @Inject constructor(
         val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
         val bannerBeanList = bannerBeanDao.getBannerBeanList()
         return if (bannerBeanList.isNotEmpty() && downImageTime > 0) {
-            LogUtil.i("HomePageViewModel", "downFromDataStore")
             if (System.currentTimeMillis() - downImageTime < ONE_DAY) {
+                LogUtil.i("HomePageViewModel", "downFromDataStore")
                 BaseModel(bannerBeanList, 0, "") //还在有效期ONE_DAY内就直接返回
             } else { //超过一天有效期，
                 LogUtil.i("HomePageViewModel", "out of time, downFromNet")
@@ -272,6 +272,7 @@ class HomePageViewModel @Inject constructor(
         val articleListTop = articleListDao.getTopArticleList(HOME_TOP) //在数据库里筛选热门文章
         return if (articleListTop.isNotEmpty() && downTopArticleTime > 0) {
             if (System.currentTimeMillis() - downTopArticleTime < FOUR_HOUR && !query.isNetRefresh) { //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
+                LogUtil.i("HomePageViewModel", "in time, downFromDataBase")
                 BaseModel(articleListTop, 0, "") //还在有效期内就直接返回
             } else { //超过一天有效期，
                 LogUtil.i("HomePageViewModel", "out of time, downFromNet")
@@ -285,7 +286,7 @@ class HomePageViewModel @Inject constructor(
     //endregion
 
 
-    //region 头条文章数据
+    //region 一般文章数据
     /**
      * 封装action，形成类似DSL风格
      */
@@ -325,7 +326,7 @@ class HomePageViewModel @Inject constructor(
     //endregion
 
 
-    //region 头条文章本地或网络获取数据
+    //region 一般文章本地或网络获取数据
     private suspend fun getHomeCommonArticleData(query: QueryHomeArticle): BaseModel<List<Article>> {
         //先获取热门文章
         var downCommonArticleTime = 0L
@@ -339,18 +340,18 @@ class HomePageViewModel @Inject constructor(
         LogUtil.i("HomeRepository", "downCommonArticleTime = $formatTime")
         val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
         val articleListHome = articleListDao.getArticleList(HOME) //在数据库里筛选热门文章
+        val page = query.page - 1
         return if (articleListHome.isNotEmpty() && downCommonArticleTime > 0) {
-            if (System.currentTimeMillis() - downCommonArticleTime < FOUR_HOUR && !query.isNetRefresh) { //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
+            if (System.currentTimeMillis() - downCommonArticleTime < FOUR_HOUR && !query.isNetRefresh && page == 0) { //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
+                LogUtil.i("HomePageViewModel", "in time, downFromDataBase, page = $page")
                 BaseModel(articleListHome, 0, "") //还在有效期内就直接返回
             } else { //超过一天有效期，
-                val page = query.page - 1
                 LogUtil.i("HomePageViewModel", "out of time, downFromNet, page = $page")
                 val articleList =
                     homeCommonArticleListUseCase.getHomeCommonArticleListInfo(page)
                 BaseModel(articleList.data.datas, 0, "")
             }
         } else {
-            val page = query.page - 1
             LogUtil.i("HomePageViewModel", "downFromNet, page = $page")
             val articleList =
                 homeCommonArticleListUseCase.getHomeCommonArticleListInfo(page)

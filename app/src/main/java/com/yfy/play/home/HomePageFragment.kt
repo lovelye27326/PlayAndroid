@@ -258,7 +258,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                         viewModel.articleList.clear()
                     val articleList = info.articleList
                     viewModel.articleList.addAll(articleList)
-                    articleAdapter.notifyItemInserted(size)
+//                    articleAdapter.notifyItemInserted(size) //等再加载完一般文章后再通知变化
 
                     viewModel.viewModelScope.launch { //保存本地dataStore
                         var downTopArticleTime = 0L
@@ -322,7 +322,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                 HomeTopArticleState.Finished -> {
 //                    loadFinished() //判断弱网情况加载结束
                     //再加载一般文章
-                    viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, true))
+                    viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, false))
                 }
                 else -> {}
             }
@@ -332,7 +332,8 @@ class HomePageFragment : ArticleCollectBaseFragment() {
         viewModel.homeCommonArticleState.observe(this) { info ->
             when (info) {
                 HomeCommonArticleState.Loading -> { //Loading是object声明的，不用is判断
-                    startLoading() //判断弱网情况加载结束
+                    if (page != 1)
+                        startLoading() //判断弱网情况加载结束
                 }
                 is HomeCommonArticleState.Success -> {
                     loadFinished()
@@ -341,58 +342,64 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                     val oldSize = viewModel.articleList.size
                     val articleList = info.articleList
                     viewModel.articleList.addAll(articleList)
-                    articleAdapter.notifyItemRangeChanged(
-                        oldSize,
-                        size
-                    )
-                    viewModel.viewModelScope.launch { //保存本地dataStore
-                        var downCommonArticleTime = 0L
-                        val isCondition: suspend (Long) -> Boolean = {
-                            downCommonArticleTime = it
-                            true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
-                        }
-                        preferencesStorage.getLongData(DOWN_ARTICLE_TIME, 0L).first(isCondition)
-                        val formatTime = TimeUtils.formatTimestampWithZone8(downCommonArticleTime, "")
-                        LogUtil.i(
-                            "HomePageFrg",
-                            "downCommonArticleFormatTime = $formatTime, downCommonArticleTime = $downCommonArticleTime"
+                    if (page != 1) {
+                        articleAdapter.notifyItemRangeChanged(
+                            oldSize,
+                            size
                         )
+                    } else {
+                        articleAdapter.notifyItemInserted(size)
+                    }
+                    if (page == 1) { //一般文章首页需要判断保存到数据库
+                        viewModel.viewModelScope.launch { //保存本地dataStore
+                            var downCommonArticleTime = 0L
+                            val isCondition: suspend (Long) -> Boolean = {
+                                downCommonArticleTime = it
+                                true //总返回真， 传入first只取第一个后自动结束流收集， 和launchIn(coroutineScope)传入viewModel作用域自动结束收集功能类似
+                            }
+                            preferencesStorage.getLongData(DOWN_ARTICLE_TIME, 0L).first(isCondition)
+                            val formatTime =
+                                TimeUtils.formatTimestampWithZone8(downCommonArticleTime, "")
+                            LogUtil.i(
+                                "HomePageFrg",
+                                "downCommonArticleFormatTime = $formatTime, downCommonArticleTime = $downCommonArticleTime"
+                            )
 
-                        val articleListDao =
-                            PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
-                                .browseHistoryDao()
-                        val articleListHome =
-                            articleListDao.getArticleList(HOME) //在数据库里筛选热门头条文章
-                        if (downCommonArticleTime == 0L || System.currentTimeMillis() - downCommonArticleTime >= FOUR_HOUR) {
-                            if (articleListHome.isNotEmpty()) { //数据库本地list数据非空进行判断
-                                if (articleListHome[0].link != articleList[0].link) { //数据库本地list数据第一条（index = 0）和api返回的第一条的url字段一致
-                                    LogUtil.i("HomePageFrg", "dataBase not null, put article")
+                            val articleListDao =
+                                PlayDatabase.getDatabase(ActivityUtil.getTopActivityOrApp())
+                                    .browseHistoryDao()
+                            val articleListHome =
+                                articleListDao.getArticleList(HOME) //在数据库里筛选热门一般文章
+                            if (downCommonArticleTime == 0L || System.currentTimeMillis() - downCommonArticleTime >= FOUR_HOUR) {
+                                if (articleListHome.isNotEmpty()) { //数据库本地list数据非空进行判断
+                                    if (articleListHome[0].link != articleList[0].link) { //数据库本地list数据第一条（index = 0）和api返回的第一条的url字段一致
+                                        LogUtil.i("HomePageFrg", "dataBase not null, put article")
+                                        preferencesStorage.putLongData(
+                                            DOWN_ARTICLE_TIME,
+                                            System.currentTimeMillis()
+                                        )
+
+                                        articleList.forEach {
+                                            it.localType = HOME //设置文章本地类型为一般文章
+                                        }
+                                        articleListDao.deleteAll(HOME)
+                                        articleListDao.insertList(articleList)
+                                    }
+                                } else {
+                                    LogUtil.i("HomePageFrg", "dataBase null, put article")
                                     preferencesStorage.putLongData(
                                         DOWN_ARTICLE_TIME,
                                         System.currentTimeMillis()
                                     )
-
                                     articleList.forEach {
-                                        it.localType = HOME //设置文章本地类型为头条
+                                        it.localType = HOME
                                     }
                                     articleListDao.deleteAll(HOME)
-                                    articleListDao.insertList(articleList)
+                                    articleListDao.insertList(articleList) //插入数据库
                                 }
-                            } else {
-                                LogUtil.i("HomePageFrg", "dataBase null, put article")
-                                preferencesStorage.putLongData(
-                                    DOWN_ARTICLE_TIME,
-                                    System.currentTimeMillis()
-                                )
-                                articleList.forEach {
-                                    it.localType = HOME
-                                }
-                                articleListDao.deleteAll(HOME)
-                                articleListDao.insertList(articleList) //插入数据库
                             }
                         }
                     }
-
                 }
                 is HomeCommonArticleState.Error -> {
                     showLoadErrorView() //判断弱网情况加载结束

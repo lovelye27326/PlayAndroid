@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import com.yfy.core.R
 import com.yfy.core.util.*
@@ -20,6 +21,11 @@ import com.yfy.core.view.base.lce.ILce
  */
 @SuppressLint("Registered")
 abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
+    open val toolbarBgColor: Int
+        get() = ContextCompat.getColor(
+            this,
+            R.color.colorPrimary
+        )
 
     /**
      * Activity中显示加载等待的控件。
@@ -47,7 +53,7 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
 
     //设置内容到屏幕顶部的margin是否等于statusbar， 可重写
     open val isContentParentMarginTopEqualStatusBar = true
-    open val isFullScreen = true
+    open val isFullScreen = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,7 +78,11 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
         setupViews()
     }
 
-    open fun initWindow() {}
+
+    open fun initWindow() {
+        BarUtil.setStatusBarColor(this, toolbarBgColor, true)
+    }
+
 
     protected open fun setupViews() {
         val view = View.inflate(this, R.layout.layout_lce, null)
@@ -180,12 +190,10 @@ abstract class BaseActivity : AppCompatActivity(), ILce, BaseActivityInit {
     }
 
 
-
     override fun onBackPressed() {
         ActivityUtil.finishToActivity(this, true, true) //结束包括当前登录页在内的其他活动页
 //        finish()
     }
-
 
 
     override fun onDestroy() {

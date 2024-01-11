@@ -6,11 +6,13 @@ import android.view.View
 import android.view.animation.*
 import com.yfy.core.util.showShortToast
 import com.yfy.core.view.base.BaseActivity
-import com.yfy.play.main.MainActivity
 import com.yfy.play.databinding.ActivityWelcomeBinding
+import com.yfy.play.main.MainActivity
 
 class WelcomeActivity : BaseActivity(),
     View.OnClickListener {
+    override val isFullScreen: Boolean
+        get() = true
 
     private lateinit var binding: ActivityWelcomeBinding
     private var exitTime: Long = 0

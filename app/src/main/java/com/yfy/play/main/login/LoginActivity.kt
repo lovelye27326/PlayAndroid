@@ -38,6 +38,8 @@ class LoginActivity : BaseActivity() {
     private var mPassWord = ""
     private var mIsLogin = true
 
+    override val isContentParentMarginTopEqualStatusBar: Boolean
+        get() = false
 
     override fun getLayoutView(): View {
         binding = ActivityLoginBinding.inflate(layoutInflater)
