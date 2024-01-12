@@ -69,7 +69,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
     @Inject
     lateinit var preferencesStorage: PreferencesStorage
 
-    private lateinit var articleAdapter: ArticleAdapter
+    private var articleAdapter by releasableNotNull<ArticleAdapter>()
     private var page = 1
 
     override fun initView() {

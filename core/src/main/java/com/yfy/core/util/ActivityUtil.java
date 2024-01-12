@@ -2244,6 +2244,7 @@ public final class ActivityUtil {
             ActivityManager activityMgr =
                     (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             activityMgr.killBackgroundProcesses(context.getPackageName());
+            DataStoreUtils.INSTANCE.clean();
             //			System.exit(0);
         } catch (Exception e) {
             LogUtil.e("ActivityUtil", "err: " + e.getMessage());

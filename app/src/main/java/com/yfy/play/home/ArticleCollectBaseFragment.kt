@@ -21,16 +21,16 @@ abstract class ArticleCollectBaseFragment : BaseFragment() {
             ArticleBroadCast.setArticleChangesReceiver(requireActivity()) { refreshData() }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun initData() {
         refreshData()
     }
 
     abstract fun refreshData()
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onDestroy() {
+        super.onDestroy()
         ArticleBroadCast.clearArticleChangesReceiver(requireActivity(), articleReceiver)
+        articleReceiver = null
     }
 
 }

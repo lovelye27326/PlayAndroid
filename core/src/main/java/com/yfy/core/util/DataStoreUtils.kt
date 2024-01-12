@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
+import kotlin.reflect.KProperty
 
 /**
  *
@@ -69,18 +69,27 @@ lifecycleScope.cancel() // 取消所有协程
  *
  */
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "PlayAndroidDataStore")
+var Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "PlayAndroidDataStore")
 
-object DataStoreUtils {
+private operator fun Any.setValue( //by preferencesDataStore调的PreferenceDataStoreSingletonDelegate缺setValue方法
+    context: Context,
+    property: KProperty<*>,
+    dataStore: DataStore<Preferences>
+) {
+
+}
+
+
+object DataStoreUtils : DataStore<Preferences> {
     private const val TAG = "DataStoreUtils"
-    private lateinit var dataStore: DataStore<Preferences>
+    private var dataStorePre by releasableNotNull<DataStore<Preferences>>()
 
     /**
      * init Context
      * @param context Context
      */
     fun init(context: Context): DataStoreUtils {
-        dataStore = context.dataStore
+        dataStorePre = context.dataStore
         return this
     }
 
@@ -100,8 +109,16 @@ object DataStoreUtils {
     @Suppress("UNCHECKED_CAST")
     fun <U> getData(key: String, default: U): Flow<U> {
         val data = when (default) {
-            is Long -> readLongFlow(dataStore, key, default)
-            is String -> readStringFlow(dataStore, key, default)
+            is Long -> if (::dataStorePre.isInitialed()) readLongFlow(
+                dataStorePre,
+                key,
+                default
+            ) else flow { emit(default) }
+            is String -> if (::dataStorePre.isInitialed()) readStringFlow(
+                dataStorePre,
+                key,
+                default
+            ) else flow { emit(default) }
             is Int -> readIntFlow(key, default)
             is Boolean -> readBooleanFlow(key, default)
             is Float -> readFloatFlow(key, default)
@@ -112,8 +129,8 @@ object DataStoreUtils {
 
     suspend fun <U> putData(key: String, value: U) {
         when (value) {
-            is Long -> saveLongData(dataStore, key, value)
-            is String -> saveStringData(dataStore, key, value)
+            is Long -> if (::dataStorePre.isInitialed()) saveLongData(dataStorePre, key, value)
+            is String -> if (::dataStorePre.isInitialed()) saveStringData(dataStorePre, key, value)
             is Int -> saveIntData(key, value)
             is Boolean -> saveBooleanData(key, value)
             is Float -> saveFloatData(key, value)
@@ -133,7 +150,7 @@ object DataStoreUtils {
     }
 
     fun readBooleanFlow(key: String, default: Boolean = false): Flow<Boolean> =
-        dataStore.data
+        if (::dataStorePre.isInitialed()) dataStorePre.data
             .catch {
                 //当读取数据遇到错误时，如果是 `IOException` 异常，发送一个 emptyPreferences 来重新使用
                 //但是如果是其他的异常，最好将它抛出去，不要隐藏问题
@@ -145,7 +162,7 @@ object DataStoreUtils {
                 }
             }.map {
                 it[booleanPreferencesKey(key)] ?: default
-            }
+            } else flow { emit(default) }
 
 
     /**
@@ -186,7 +203,8 @@ object DataStoreUtils {
                 value = it[booleanPreferencesKey(key)] ?: default
                 true //总返回真，结束流收集
             }
-            dataStore.data.first(isCondition)
+            if (::dataStorePre.isInitialed())
+                dataStorePre.data.first(isCondition)
         }
         return value
     }
@@ -207,7 +225,7 @@ object DataStoreUtils {
     如StateFlow或SharedFlow。你可以创建一个监听DataStore变化的回调，并在数据发生变化时更新相应的StateFlow或SharedFlow，这样其他部分的代码可以通过订阅这个热流来实时获取数据更新。
 
     另外,
-       Kotlin DataStore中的数据读取Flow本身不会自动关闭收集。当你调用Flow的collect函数来获取和处理数据时，你需要自己管理收集的生命周期。
+    Kotlin DataStore中的数据读取Flow本身不会自动关闭收集。当你调用Flow的collect函数来获取和处理数据时，你需要自己管理收集的生命周期。
 
     通常情况下，你应在某种可以控制其生命周期的范围内（如协程作用域、ViewModel、LifecycleOwner等）收集Flow。这样，当这个范围结束或者被销毁时，相关的协程任务也会被取消，包括对Flow的收集。
 
@@ -244,7 +262,7 @@ object DataStoreUtils {
 
      */
     fun readIntFlow(key: String, default: Int = 0): Flow<Int> =
-        dataStore.data
+        if (::dataStorePre.isInitialed()) dataStorePre.data
             .catch {
                 if (it is IOException) {
                     it.printStackTrace()
@@ -254,15 +272,16 @@ object DataStoreUtils {
                 }
             }.map {
                 it[intPreferencesKey(key)] ?: default
-            }
+            } else flow { emit(default) }
 
     fun readIntData(key: String, default: Int = 0): Int {
         var value = 0
         runBlocking {
-            dataStore.data.first {
-                value = it[intPreferencesKey(key)] ?: default
-                true
-            }
+            if (::dataStorePre.isInitialed())
+                dataStorePre.data.first {
+                    value = it[intPreferencesKey(key)] ?: default
+                    true
+                }
         }
         return value
     }
@@ -288,16 +307,17 @@ object DataStoreUtils {
     fun readStringData(key: String, default: String = ""): String {
         var value = ""
         runBlocking {
-            dataStore.data.first {
-                value = it[stringPreferencesKey(key)] ?: default
-                true
-            }
+            if (::dataStorePre.isInitialed())
+                dataStorePre.data.first {
+                    value = it[stringPreferencesKey(key)] ?: default
+                    true
+                }
         }
         return value
     }
 
     fun readFloatFlow(key: String, default: Float = 0f): Flow<Float> =
-        dataStore.data
+        if (::dataStorePre.isInitialed()) dataStorePre.data
             .catch {
                 if (it is IOException) {
                     it.printStackTrace()
@@ -307,15 +327,16 @@ object DataStoreUtils {
                 }
             }.map {
                 it[floatPreferencesKey(key)] ?: default
-            }
+            } else flow { emit(default) }
 
     fun readFloatData(key: String, default: Float = 0f): Float {
         var value = 0f
         runBlocking {
-            dataStore.data.first {
-                value = it[floatPreferencesKey(key)] ?: default
-                true
-            }
+            if (::dataStorePre.isInitialed())
+                dataStorePre.data.first {
+                    value = it[floatPreferencesKey(key)] ?: default
+                    true
+                }
         }
         return value
     }
@@ -338,19 +359,21 @@ object DataStoreUtils {
                 it[longPreferencesKey(key)] ?: default
             }
 
+
     fun readLongData(key: String, default: Long = 0L): Long {
         var value = 0L
         runBlocking {
-            dataStore.data.first {
-                value = it[longPreferencesKey(key)] ?: default
-                true
-            }
+            if (::dataStorePre.isInitialed())
+                dataStorePre.data.first {
+                    value = it[longPreferencesKey(key)] ?: default
+                    true
+                }
         }
         return value
     }
 
     suspend fun saveBooleanData(key: String, value: Boolean) {
-        dataStore.edit { mutablePreferences ->
+        if (::dataStorePre.isInitialed()) dataStorePre.edit { mutablePreferences ->
             mutablePreferences[booleanPreferencesKey(key)] = value
         }
     }
@@ -359,7 +382,7 @@ object DataStoreUtils {
         runBlocking { saveBooleanData(key, value) }
 
     suspend fun saveIntData(key: String, value: Int) {
-        dataStore.edit { mutablePreferences ->
+        dataStorePre.edit { mutablePreferences ->
             mutablePreferences[intPreferencesKey(key)] = value
         }
     }
@@ -373,10 +396,10 @@ object DataStoreUtils {
     }
 
     fun saveSyncStringData(key: String, value: String) =
-        runBlocking { saveStringData(dataStore, key, value) }
+        runBlocking { saveStringData(dataStorePre, key, value) }
 
     suspend fun saveFloatData(key: String, value: Float) {
-        dataStore.edit { mutablePreferences ->
+        dataStorePre.edit { mutablePreferences ->
             mutablePreferences[floatPreferencesKey(key)] = value
         }
     }
@@ -390,19 +413,34 @@ object DataStoreUtils {
     }
 
     private fun saveSyncLongData(key: String, value: Long) =
-        runBlocking { saveLongData(dataStore, key, value) }
+        runBlocking { saveLongData(dataStorePre, key, value) }
 
     suspend fun clear() {
-        dataStore.edit {
+        dataStorePre.edit {
             it.clear()
         }
     }
 
     fun clearSync() {
         runBlocking {
-            dataStore.edit {
+            dataStorePre.edit {
                 it.clear()
             }
+        }
+    }
+
+    fun clean() {
+        if (::dataStorePre.isInitialed()) {
+            ::dataStorePre.release()
+        }
+    }
+
+    override val data: Flow<Preferences>
+        get() = this.data
+
+    override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+        return updateData {
+            it.toMutablePreferences().apply { transform(this) }
         }
     }
 

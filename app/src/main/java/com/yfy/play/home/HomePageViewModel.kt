@@ -153,10 +153,10 @@ class HomePageViewModel @Inject constructor(
         val bannerBeanList = bannerBeanDao.getBannerBeanList()
         return if (bannerBeanList.isNotEmpty() && downImageTime > 0) {
             if (System.currentTimeMillis() - downImageTime < ONE_DAY) {
-                LogUtil.i("HomePageViewModel", "downFromDataStore")
+                LogUtil.i("HomePageViewModel", "banner downFromDataStore")
                 BaseModel(bannerBeanList, 0, "") //还在有效期ONE_DAY内就直接返回
             } else { //超过一天有效期，
-                LogUtil.i("HomePageViewModel", "out of time, downFromNet")
+                LogUtil.i("HomePageViewModel", "banner out of time, downFromNet")
                 homeBannerUseCase.getHomeBannerInfo()
             }
         } else {
@@ -267,11 +267,12 @@ class HomePageViewModel @Inject constructor(
         preferencesStorage.getLongData(DOWN_TOP_ARTICLE_TIME, 0L)
             .first(condition)
         val formatTime = TimeUtils.formatTimestamp(downTopArticleTime, "")
-        LogUtil.i("HomeRepository", "downTopArticleTime = $formatTime")
+        LogUtil.i("HomePageViewModel", "downTopArticleTime = $formatTime")
         val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
         val articleListTop = articleListDao.getTopArticleList(HOME_TOP) //在数据库里筛选热门文章
         return if (articleListTop.isNotEmpty() && downTopArticleTime > 0) {
-            if (System.currentTimeMillis() - downTopArticleTime < FOUR_HOUR && !query.isNetRefresh) { //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
+            val page = query.page - 1
+            if (System.currentTimeMillis() - downTopArticleTime < FOUR_HOUR && !query.isNetRefresh && page == 0) { //小于缓存保存的时间4小时，且非网络刷新状态时取缓存
                 LogUtil.i("HomePageViewModel", "in time, downFromDataBase")
                 BaseModel(articleListTop, 0, "") //还在有效期内就直接返回
             } else { //超过一天有效期，
@@ -337,7 +338,7 @@ class HomePageViewModel @Inject constructor(
         preferencesStorage.getLongData(DOWN_ARTICLE_TIME, 0L)
             .first(condition)
         val formatTime = TimeUtils.formatTimestamp(downCommonArticleTime, "")
-        LogUtil.i("HomeRepository", "downCommonArticleTime = $formatTime")
+        LogUtil.i("HomePageViewModel", "downCommonArticleTime = $formatTime")
         val articleListDao = PlayDatabase.getDatabase(application).browseHistoryDao()
         val articleListHome = articleListDao.getArticleList(HOME) //在数据库里筛选热门文章
         val page = query.page - 1

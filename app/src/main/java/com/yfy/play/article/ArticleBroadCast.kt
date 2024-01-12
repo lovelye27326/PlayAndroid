@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.yfy.core.util.LogUtil
 
 /**
  *  文章广播
@@ -42,7 +43,7 @@ private class ArticleBroadcastReceiver(val block: () -> Unit) :
     BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.e("TAG", "onReceive: ${intent.action}")
+        LogUtil.i("ArticleBroadCastReceiver", "onReceive: ${intent.action}")
         if (intent.action == ArticleBroadCast.COLLECT_RECEIVER) {
             block.invoke()
         }

@@ -2,9 +2,7 @@ package com.yfy.core
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
-import com.yfy.core.util.DataStoreUtils
-import com.yfy.core.util.Util
+import com.yfy.core.util.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -18,7 +16,7 @@ object Play {
     private const val USERNAME = "username"
     private const val NICE_NAME = "nickname"
     private const val IS_LOGIN = "isLogin"
-    private lateinit var dataStore: DataStoreUtils
+    private var dataStore by releasableNotNull<DataStoreUtils>()
 
     /**
      * 获取全局Context，在代码的任意位置都可以调用，随时都能获取到全局Context对象。
@@ -36,7 +34,7 @@ object Play {
      */
     fun initialize(c: Context?) {
         if (c == null) {
-            Log.w(TAG, "initialize: context is null")
+            LogUtil.i(TAG, "initialize: context is null")
             return
         }
         context = c
@@ -51,7 +49,7 @@ object Play {
      * @return 已登录返回true，未登录返回false。
      */
     fun isLogin(): Flow<Boolean> {
-        return if (::dataStore.isInitialized) {
+        return if (::dataStore.isInitialed()) {
             dataStore.readBooleanFlow(IS_LOGIN)
         } else {
             flow {
@@ -61,7 +59,7 @@ object Play {
     }
 
     fun isLoginResult(): Boolean {
-        return if (::dataStore.isInitialized) {
+        return if (::dataStore.isInitialed()) {
             dataStore.readBooleanData(IS_LOGIN)
         } else {
             false
