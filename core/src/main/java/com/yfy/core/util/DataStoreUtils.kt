@@ -436,7 +436,7 @@ object DataStoreUtils : DataStore<Preferences> {
     }
 
     override val data: Flow<Preferences>
-        get() = this.data
+        get() = this.data //对应getData
 
     override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
         return updateData {

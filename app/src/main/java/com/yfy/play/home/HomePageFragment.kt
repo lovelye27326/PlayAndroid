@@ -71,6 +71,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
 
     private var articleAdapter by releasableNotNull<ArticleAdapter>()
     private var page = 1
+    private var isNetRefresh = false
 
     override fun initView() {
         binding.apply {
@@ -133,19 +134,21 @@ class HomePageFragment : ArticleCollectBaseFragment() {
             articleAdapter = ArticleAdapter(viewModel.articleList, true, this@HomePageFragment)
             homeToTopRecyclerView.onRefreshListener({
                 page = 1
+                isNetRefresh = true
                 LogUtil.i("HomePageFrg", "refresh page = $page")
                 viewModel.getHomeTopArticleListInfo(
                     QueryHomeArticle(
                         page,
-                        true
+                        isNetRefresh
                     )
                 ) //头条文章API只用到QueryHomeArticle对象的isNetRefresh字段
 //                getArticleList(true)
             }, {
                 page++
                 LogUtil.i("HomePageFrg", "loadMore page = $page")
+                isNetRefresh = false
                 //只加载一般文章
-                viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, false))
+                viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, isNetRefresh))
 //                getArticleList(false)
             })
             homeToTopRecyclerView.setAdapter(articleAdapter)
@@ -322,7 +325,7 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                 HomeTopArticleState.Finished -> {
 //                    loadFinished() //判断弱网情况加载结束
                     //再加载一般文章
-                    viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, false))
+                    viewModel.getHomeCommonArticleListInfo(QueryHomeArticle(page, isNetRefresh))
                 }
                 else -> {}
             }
