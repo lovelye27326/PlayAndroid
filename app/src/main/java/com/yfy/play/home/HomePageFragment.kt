@@ -187,7 +187,6 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                         binding.homeBanner.start()
                     }
                     binding.homeBanner.start() //开始轮播
-
                     viewModel.viewModelScope.launch { //保存本地dataStore
                         var downImageTime = 0L
                         val isCondition: suspend (Long) -> Boolean = {
@@ -217,6 +216,12 @@ class HomePageFragment : ArticleCollectBaseFragment() {
                                         bannerBeanDao,
                                         bannerList
                                     ) //预加载图片和插入数据库
+                                } else { //本地、远程的数据列表第一条一致时就只更新保存时间
+                                    LogUtil.i("HomePageFrg", "dataBase not null, banner save time update")
+                                    preferencesStorage.putLongData(
+                                        DOWN_IMAGE_TIME,
+                                        System.currentTimeMillis()
+                                    )
                                 }
                             } else {
                                 LogUtil.i("HomePageFrg", "dataBase null, put banner")

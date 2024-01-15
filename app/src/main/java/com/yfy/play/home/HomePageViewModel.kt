@@ -152,7 +152,7 @@ class HomePageViewModel @Inject constructor(
         val bannerBeanDao = PlayDatabase.getDatabase(application).bannerBeanDao()
         val bannerBeanList = bannerBeanDao.getBannerBeanList()
         return if (bannerBeanList.isNotEmpty() && downImageTime > 0) {
-            if (System.currentTimeMillis() - downImageTime < ONE_DAY) {
+            if (System.currentTimeMillis() - downImageTime < ONE_DAY) { //判断是否在有效期内
                 LogUtil.i("HomePageViewModel", "banner downFromDataStore")
                 BaseModel(bannerBeanList, 0, "") //还在有效期ONE_DAY内就直接返回
             } else { //超过一天有效期，
